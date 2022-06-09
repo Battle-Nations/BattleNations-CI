@@ -43,12 +43,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: true
+          lfs: 'true'
+          submodules: 'recursive'
 
       - run: git lfs pull
 
       - run: sudo apt install tree
-      
+
       - run: tree
 
       - uses: actions/cache@v2
@@ -116,7 +117,8 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: true
+          lfs: 'true'
+          submodules: 'recursive'
 
       - run: git lfs pull
           
@@ -185,7 +187,8 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: true
+          lfs: 'true'
+          submodules: 'recursive'
 
       - run: git lfs pull
 
