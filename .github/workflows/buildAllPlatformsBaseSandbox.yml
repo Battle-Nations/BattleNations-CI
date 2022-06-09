@@ -46,7 +46,7 @@ jobs:
           lfs: 'true'
           submodules: 'recursive'
 
-      - run: git lfs pull
+      - run: git submodule foreach git lfs pull
 
       - uses: actions/cache@v2
         with:
@@ -116,7 +116,7 @@ jobs:
           lfs: 'true'
           submodules: 'recursive'
 
-      - run: git lfs pull
+      - run: git submodule foreach git lfs pull
           
       - uses: actions/cache@v2
         with:
@@ -186,7 +186,7 @@ jobs:
           lfs: 'true'
           submodules: 'recursive'
 
-      - run: git lfs pull
+      - run: git submodule foreach git lfs pull
 
       - uses: actions/cache@v2
         with:
