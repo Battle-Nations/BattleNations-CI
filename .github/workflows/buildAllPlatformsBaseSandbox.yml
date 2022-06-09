@@ -69,16 +69,18 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
-      - uses: vimtor/action-zip@v1
+      - uses: thedoctor0/zip-release@main
         with:
-          files: build/${{ matrix.targetPlatform }}/*.so build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }} build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
-          dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          type: 'zip'
+          filename: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          path: build/${{ matrix.targetPlatform }}/*.so build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }} build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
 
-      - uses: vimtor/action-zip@v1
+      - uses: thedoctor0/zip-release@main
         with:
-          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
-          dest: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-
+          type: 'zip'
+          filename: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          path: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -148,18 +150,19 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ github.event.inputs.buildName }}
+          projectPath: C:/build_workspace
       
       - run: get-PSDrive
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/*.dll build/${{ matrix.targetPlatform }}/*.exe build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
-          dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          files: C:/build_workspace/build/${{ matrix.targetPlatform }}/*.dll C:/build_workspace/build/${{ matrix.targetPlatform }}/*.exe C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
+          dest: C:/build_workspace/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
-          dest: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          files: C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          dest: C:/build_workspace/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
@@ -168,7 +171,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: C:/build_workspace/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -178,7 +181,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: C:/build_workspace/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permission: private
 
   buildForMacOSBasedPlatforms:
@@ -223,7 +226,7 @@ jobs:
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/*.app
+          files: build/${{ matrix.targetPlatform }}/.app
           dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - uses: vimtor/action-zip@v1
