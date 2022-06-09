@@ -137,10 +137,12 @@ jobs:
             Library-
 
       - name: Copy workspace to C drive
-        run: Copy-Item -Path "*.*" -Destination "C:\build_workspace" -Recurse
+        run: Copy-Item -Path "*.*" -Destination "C:\build_workspace" -Recurse -verbose
 
       - name: Show workspace
-        run: cd C:/build_workspace && dir
+        run: | 
+          cd "C:/build_workspace"
+          dir
       
       - run: get-PSDrive
 
