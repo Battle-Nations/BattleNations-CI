@@ -65,6 +65,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ github.event.inputs.buildName }}
+          gitPrivateToken: ${{ secrets.GH_PAT }}
 
       - uses: vimtor/action-zip@v1
         with:
