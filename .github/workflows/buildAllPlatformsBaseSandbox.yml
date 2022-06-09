@@ -47,6 +47,10 @@ jobs:
 
       - run: git lfs pull
 
+      - run: sudo apt install tree
+      
+      - run: tree
+
       - uses: actions/cache@v2
         with:
           path: Library
