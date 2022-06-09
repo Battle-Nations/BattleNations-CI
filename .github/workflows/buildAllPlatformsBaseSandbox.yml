@@ -46,11 +46,7 @@ jobs:
           lfs: 'true'
           submodules: 'recursive'
 
-      - run: GIT_TRACE=1 git lfs pull
-
-      - run: sudo apt install tree
-
-      - run: tree
+      - run: git lfs pull
 
       - uses: actions/cache@v2
         with:
