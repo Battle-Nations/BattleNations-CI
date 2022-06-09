@@ -46,7 +46,7 @@ jobs:
           lfs: 'true'
           submodules: 'recursive'
 
-      - run: git lfs pull
+      - run: GIT_TRACE=1 git lfs pull
 
       - run: sudo apt install tree
 
