@@ -56,7 +56,9 @@ jobs:
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
             Library-
-            
+
+      - run: df -h
+
       - uses: Battle-Nations/unity-builder@bn-ci-main
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
@@ -127,7 +129,9 @@ jobs:
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
             Library-
-            
+      
+      - run: get-PSDrive
+
       - uses: Battle-Nations/unity-builder@bn-ci-main
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
@@ -136,7 +140,9 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ github.event.inputs.buildName }}
-          
+      
+      - run: get-PSDrive
+
       - uses: vimtor/action-zip@v1
         with:
           files: build/${{ matrix.targetPlatform }}/*.dll build/${{ matrix.targetPlatform }}/*.exe build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
