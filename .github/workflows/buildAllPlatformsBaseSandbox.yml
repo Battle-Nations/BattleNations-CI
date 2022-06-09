@@ -84,14 +84,14 @@ jobs:
           permision: private
 
       - name: Upload Release To Digital Ocean
-              uses: BetaHuhn/do-spaces-action@v2
-              with:
-                access_key: ${{ secrets.DO_ACCESS_KEY}}
-                secret_key: ${{ secrets.DO_SECRET_KEY }}
-                space_name: ${{ secrets.DO_SPACE_NAME }}
-                space_region: ${{ secrets.DO_SPACE_REGION }}
-                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-                permision: private
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          permision: private
 
   buildForWindowsBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Windows
@@ -151,14 +151,14 @@ jobs:
           permision: private
 
       - name: Upload Release To Digital Ocean
-              uses: BetaHuhn/do-spaces-action@v2
-              with:
-                access_key: ${{ secrets.DO_ACCESS_KEY}}
-                secret_key: ${{ secrets.DO_SECRET_KEY }}
-                space_name: ${{ secrets.DO_SPACE_NAME }}
-                space_region: ${{ secrets.DO_SPACE_REGION }}
-                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-                permision: private
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          permision: private
 
   buildForMacOSBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Mac
@@ -218,11 +218,11 @@ jobs:
           permision: private
 
       - name: Upload Release To Digital Ocean
-              uses: BetaHuhn/do-spaces-action@v2
-              with:
-                access_key: ${{ secrets.DO_ACCESS_KEY}}
-                secret_key: ${{ secrets.DO_SECRET_KEY }}
-                space_name: ${{ secrets.DO_SPACE_NAME }}
-                space_region: ${{ secrets.DO_SPACE_REGION }}
-                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-                permision: private
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          permision: private
