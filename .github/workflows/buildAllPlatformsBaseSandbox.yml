@@ -65,18 +65,33 @@ jobs:
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/
-          dest: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          files: build/${{ matrix.targetPlatform }}/*.so build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }} build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
+          dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
-      - name: Upload To Digital Ocean
+      - uses: vimtor/action-zip@v1
+        with:
+          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          dest: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          access_key: ${{ secrets.DO_ACCESS_KEY}}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permision: private
+
+      - name: Upload Release To Digital Ocean
+              uses: BetaHuhn/do-spaces-action@v2
+              with:
+                access_key: ${{ secrets.DO_ACCESS_KEY}}
+                secret_key: ${{ secrets.DO_SECRET_KEY }}
+                space_name: ${{ secrets.DO_SPACE_NAME }}
+                space_region: ${{ secrets.DO_SPACE_REGION }}
+                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+                permision: private
 
   buildForWindowsBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Windows
@@ -117,18 +132,33 @@ jobs:
           
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/
-          dest: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          files: build/${{ matrix.targetPlatform }}/*.dll build/${{ matrix.targetPlatform }}/*.exe build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
+          dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
-      - name: Upload To Digital Ocean
+      - uses: vimtor/action-zip@v1
+        with:
+          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          dest: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY}}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permision: private
+
+      - name: Upload Release To Digital Ocean
+              uses: BetaHuhn/do-spaces-action@v2
+              with:
+                access_key: ${{ secrets.DO_ACCESS_KEY}}
+                secret_key: ${{ secrets.DO_SECRET_KEY }}
+                space_name: ${{ secrets.DO_SPACE_NAME }}
+                space_region: ${{ secrets.DO_SPACE_REGION }}
+                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+                permision: private
 
   buildForMacOSBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Mac
@@ -169,15 +199,30 @@ jobs:
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/
-          dest: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}.app
+          dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
-      - name: Upload To Digital Ocean
+      - uses: vimtor/action-zip@v1
+        with:
+          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          dest: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY}}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permision: private
+
+      - name: Upload Release To Digital Ocean
+              uses: BetaHuhn/do-spaces-action@v2
+              with:
+                access_key: ${{ secrets.DO_ACCESS_KEY}}
+                secret_key: ${{ secrets.DO_SECRET_KEY }}
+                space_name: ${{ secrets.DO_SPACE_NAME }}
+                space_region: ${{ secrets.DO_SPACE_REGION }}
+                source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+                permision: private
