@@ -45,6 +45,8 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - run: git lfs pull
+
       - uses: actions/cache@v2
         with:
           path: Library
@@ -111,6 +113,8 @@ jobs:
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
           lfs: true
+
+      - run: git lfs pull
           
       - uses: actions/cache@v2
         with:
@@ -178,6 +182,8 @@ jobs:
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
           lfs: true
+
+      - run: git lfs pull
 
       - uses: actions/cache@v2
         with:
