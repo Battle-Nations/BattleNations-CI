@@ -43,7 +43,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: recurse
+          lfs: true
 
       - uses: actions/cache@v2
         with:
@@ -110,7 +110,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: recurse
+          lfs: true
           
       - uses: actions/cache@v2
         with:
@@ -177,7 +177,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: recurse
+          lfs: true
 
       - uses: actions/cache@v2
         with:
