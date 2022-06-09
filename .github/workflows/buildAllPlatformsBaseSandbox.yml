@@ -209,7 +209,7 @@ jobs:
 
       - uses: vimtor/action-zip@v1
         with:
-          files: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}.app
+          files: build/${{ matrix.targetPlatform }}/*.app
           dest: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - uses: vimtor/action-zip@v1
