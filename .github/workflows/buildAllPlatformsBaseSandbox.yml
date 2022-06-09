@@ -99,6 +99,8 @@ jobs:
           source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permission: private
 
+      - run: df -h
+
   buildForWindowsBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Windows
     runs-on: windows-2019
@@ -129,6 +131,12 @@ jobs:
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
             Library-
+
+      - name: Copy workspace to C drive
+        run: Copy-Item -Path "*.*" -Destination "C:\build_workspace" -Recurse
+
+      - name: Show workspace
+        run: cd C:/build_workspace && dir
       
       - run: get-PSDrive
 
@@ -242,3 +250,5 @@ jobs:
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           permission: private
+
+      - run: df -h
