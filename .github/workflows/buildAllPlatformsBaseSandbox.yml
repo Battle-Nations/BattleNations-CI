@@ -263,6 +263,8 @@ jobs:
           directory: 'build/${{ matrix.targetPlatform }}'
           path: '${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip'
 
+      - run: ls -lashi
+
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
