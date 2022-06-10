@@ -70,7 +70,7 @@ jobs:
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       - run: sudo chmod 777 build/${{ matrix.targetPlatform }}
-      
+
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
@@ -92,7 +92,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           out_dir: '${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
@@ -103,7 +103,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           out_dir: '${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
 
@@ -262,8 +262,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-          out_dir: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG
+          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -273,8 +273,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-          out_dir: ${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
+          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
 
       - run: df -h
