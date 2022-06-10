@@ -71,6 +71,9 @@ jobs:
 
       - run: |
               cd build/${{ matrix.targetPlatform }}
+              pwd
+              zip -r test.zip ${{ github.event.inputs.buildName }}
+              ls -lashi
               zip -r RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip ${{ github.event.inputs.buildName }} ${{ github.event.inputs.buildName }}_Data/ *.so
 
       - uses: thedoctor0/zip-release@main
