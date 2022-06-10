@@ -131,15 +131,6 @@ jobs:
           submodules: 'recursive'
 
       - run: git submodule foreach git lfs pull
-          
-      - uses: actions/cache@v2
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
 
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
@@ -147,6 +138,15 @@ jobs:
         run: |
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
+          
+      - uses: actions/cache@v2
+        with:
+          path: C:/build_workspace/Library
+          key:
+            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+            Library-
 
       - name: Show workspace
         run: | 
@@ -167,6 +167,14 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
       
       - run: get-PSDrive
+
+      - run: |
+            ls
+            cd C:/build_workspace
+            ls
+            cd C:/build_workspace/build
+            ls
+            cd C:/build_workspace/build/StandaloneWindows64
 
       - uses: thedoctor0/zip-release@main
         with:
