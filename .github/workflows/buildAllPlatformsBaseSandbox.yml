@@ -141,7 +141,7 @@ jobs:
       - name: Copy workspace to C drive
         run: |
           mkdir C:/build_workspace
-          xcopy "." "C:\build_workspace\" /s /y /q
+          xcopy "." "C:\build_workspace\" /s /y /q /h
 
       - name: Show workspace
         run: | 
