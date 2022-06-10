@@ -69,18 +69,8 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
-      - run: |
-              sudo chmod 777 build/${{ matrix.targetPlatform }}
-              ls -lashi
-              cd build
-              ls -lashi
-              cd ${{ matrix.targetPlatform }}
-              ls -lashi
-              pwd
-              zip -r test.zip ${{ github.event.inputs.buildName }}
-              ls -lashi
-              zip -r RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip ${{ github.event.inputs.buildName }} ${{ github.event.inputs.buildName }}_Data/ *.so
-
+      - run: sudo chmod 777 build/${{ matrix.targetPlatform }}
+      
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
@@ -88,12 +78,12 @@ jobs:
           directory: build/${{ matrix.targetPlatform }}
           path: ${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip 
 
-      # - uses: thedoctor0/zip-release@main
-      #   with:
-      #     type: 'zip'
-      #     filename: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-      #     directory: build/${{ matrix.targetPlatform }}
-      #     path: ${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/
+      - uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          directory: build/${{ matrix.targetPlatform }}
+          path: ${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/
           
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
