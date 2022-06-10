@@ -139,11 +139,10 @@ jobs:
             Library-
 
       - name: Copy workspace to C drive
-        run: Copy-Item -Path "*.*" -Destination "C:\build_workspace" -Recurse -verbose
+        run: Copy-Item -Path "*.*" -Destination "C:/build_workspace" -Recurse -verbose
 
       - name: Show workspace
         run: | 
-          Get-ChildItem -Path C:/ -Directory
           Get-ChildItem -Path C:/build_workspace -Directory
           pwd
       
