@@ -70,7 +70,7 @@ jobs:
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       - run: |
-              chmod +rwx build/${{ matrix.targetPlatform }}
+              sudo chmod +rwx build/${{ matrix.targetPlatform }}
               ls -lashi
               cd build
               ls -lashi
@@ -93,7 +93,7 @@ jobs:
       #     type: 'zip'
       #     filename: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
       #     directory: build/${{ matrix.targetPlatform }}
-      #     path: ${{ github.event.inputs.buildName }} ${{ github.event.inputs.buildName }}_Data/
+      #     path: ${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/
           
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
@@ -170,7 +170,6 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ github.event.inputs.buildName }}
-          projectPath: C:/build_workspace
       
       - run: get-PSDrive
 
