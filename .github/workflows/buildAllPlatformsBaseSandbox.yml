@@ -73,13 +73,15 @@ jobs:
         with:
           type: 'zip'
           filename: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          path: build/${{ matrix.targetPlatform }}/*.so build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }} build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_Data/
+          directory: build/${{ matrix.targetPlatform }}
+          path: *.so ${{ github.event.inputs.buildName }} ${{ github.event.inputs.buildName }}_Data/
 
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          path: build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          directory: build/${{ matrix.targetPlatform }}
+          path: ${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
           
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
