@@ -144,10 +144,8 @@ jobs:
       - name: Show workspace
         run: | 
           Get-ChildItem -Path C:/ -Directory
-          Get-ChildItem -Path C:/build_workspace
-          cd "C:/"
-          cd "C:/build_workspace"
-          dir
+          Get-ChildItem -Path C:/build_workspace -Directory
+          pwd
       
       - run: get-PSDrive
 
