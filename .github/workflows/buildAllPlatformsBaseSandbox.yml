@@ -141,6 +141,8 @@ jobs:
 
       - name: Show workspace
         run: | 
+          Get-ChildItem -Path C:\ -Recurse -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName
+          cd "C:/"
           cd "C:/build_workspace"
           dir
       
