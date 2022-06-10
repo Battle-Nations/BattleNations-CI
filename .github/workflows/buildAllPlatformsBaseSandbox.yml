@@ -48,7 +48,7 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: Library
           key:
@@ -139,7 +139,7 @@ jobs:
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
           
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: C:/build_workspace/Library
           key:
@@ -234,7 +234,7 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: Library
           key:
