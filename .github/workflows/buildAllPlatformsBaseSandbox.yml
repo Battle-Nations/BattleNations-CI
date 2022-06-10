@@ -141,7 +141,7 @@ jobs:
       - name: Copy workspace to C drive
         run: |
           mkdir C:/build_workspace
-          Copy-Item -Path "${{ github.workspace }}/*" -Destination "C:/build_workspace" -Recurse
+          xcopy "." "C:\build_workspace\" /s /y
 
       - name: Show workspace
         run: | 
