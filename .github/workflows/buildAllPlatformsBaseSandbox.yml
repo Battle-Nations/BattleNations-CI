@@ -53,14 +53,14 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      #- uses: actions/cache@v3
+        #with:
+          #path: Library
+          #key:
+            #Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          #restore-keys: |
+         #   Library-${{ matrix.targetPlatform }}-
+            #Library-
 
       - run: df -h
 
@@ -144,14 +144,14 @@ jobs:
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
           
-      - uses: actions/cache@v3
-        with:
-          path: C:/build_workspace/Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      #- uses: actions/cache@v3
+        #with:
+          #path: C:/build_workspace/Library
+          #key:
+            #Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          #restore-keys: |
+            #Library-${{ matrix.targetPlatform }}-
+            #Library-
 
       - name: Show workspace
         run: | 
@@ -233,14 +233,14 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      #- uses: actions/cache@v3
+        #with:
+ #         path: Library
+          #key:
+            #Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          #restore-keys: |
+            #Library-${{ matrix.targetPlatform }}-
+            #Library-
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
         env:
