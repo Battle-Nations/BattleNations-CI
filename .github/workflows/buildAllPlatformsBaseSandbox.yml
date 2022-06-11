@@ -20,6 +20,12 @@ jobs:
       BUILD_TIME: ${{ steps.envVars.outputs.BUILD_TIME }}
 
     steps:
+      - uses: actions/checkout@v3
+          with:
+            ref: '${{ github.event.inputs.ref }}'
+            token: ${{ secrets.GH_PAT }}
+            repository: Battle-Nations/BattleNations-Base-Sandbox
+            
       - name: Set ENV Vars
         id: envVars
         run: |
