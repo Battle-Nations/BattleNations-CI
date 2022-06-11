@@ -23,7 +23,12 @@ jobs:
       - name: Set ENV Vars
         id: envVars
         run: |
-          echo "::set-output name=GITHUB_SHA_SHORT::$(echo $GITHUB_SHA | cut -c 1-6)"
+          if [ -z "${{ github.event.inputs.ref }}" ]
+          then
+            echo "::set-output name=GITHUB_SHA_SHORT::$(git rev-parse --short HEAD)"
+          else
+            echo "::set-output name=GITHUB_SHA_SHORT::$(git rev-parse --short ${{ github.event.inputs.ref }})"
+          fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
 
   buildForLinuxBasedPlatforms:
