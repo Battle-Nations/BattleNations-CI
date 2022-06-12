@@ -20,14 +20,24 @@ jobs:
       BUILD_TIME: ${{ steps.envVars.outputs.BUILD_TIME }}
 
     steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: Battle-Nations/BattleNations-Base-Sandbox
+
       - name: Set ENV Vars
         id: envVars
         run: |
           if [ -z "${{ github.event.inputs.ref }}" ]
           then
+            echo No ref specified
             echo "::set-output name=GITHUB_SHA_SHORT::$(git rev-parse --short HEAD)"
+            echo $(git rev-parse --short HEAD)
           else
+            echo Ref specified
             echo "::set-output name=GITHUB_SHA_SHORT::$(git rev-parse --short ${{ github.event.inputs.ref }})"
+            echo $(git rev-parse --short ${{ github.event.inputs.ref }})
           fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
 
@@ -53,14 +63,14 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: Library
+      #     key:
+      #       Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+      #     restore-keys: |
+      #       Library-${{ matrix.targetPlatform }}-
+      #       Library-
 
       - run: df -h
 
@@ -144,14 +154,14 @@ jobs:
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
           
-      - uses: actions/cache@v3
-        with:
-          path: C:/build_workspace/Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: C:/build_workspace/Library
+      #     key:
+      #       Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+      #     restore-keys: |
+      #       Library-${{ matrix.targetPlatform }}-
+      #       Library-
 
       - name: Show workspace
         run: | 
@@ -233,14 +243,14 @@ jobs:
 
       - run: git submodule foreach git lfs pull
 
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
-            Library-
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: Library
+      #     key:
+      #       Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+      #     restore-keys: |
+      #       Library-${{ matrix.targetPlatform }}-
+      #       Library-
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
         env:
