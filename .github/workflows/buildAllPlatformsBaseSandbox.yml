@@ -52,16 +52,13 @@ jobs:
           - StandaloneLinux64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: 'true'
           submodules: 'recursive'
-
-      - run: git submodule foreach git lfs pull
 
       # - uses: actions/cache@v3
       #   with:
@@ -136,16 +133,13 @@ jobs:
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: 'true'
           submodules: 'recursive'
-
-      - run: git submodule foreach git lfs pull
 
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
@@ -162,11 +156,6 @@ jobs:
       #     restore-keys: |
       #       Library-${{ matrix.targetPlatform }}-
       #       Library-
-
-      - name: Show workspace
-        run: | 
-          Get-ChildItem -Path C:/build_workspace -Directory
-          pwd
       
       - run: get-PSDrive
 
@@ -232,16 +221,13 @@ jobs:
           - StandaloneOSX # Build a macOS standalone.
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
-          lfs: 'true'
           submodules: 'recursive'
-
-      - run: git submodule foreach git lfs pull
 
       # - uses: actions/cache@v3
       #   with:
