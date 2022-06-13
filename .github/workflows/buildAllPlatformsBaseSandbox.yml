@@ -52,7 +52,7 @@ jobs:
           - StandaloneLinux64
 
     steps:
-      - uses: Battle-Nations/actions-cached-lfs-checkout@bn-ci-main
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
@@ -133,7 +133,7 @@ jobs:
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
 
     steps:
-      - uses: Battle-Nations/actions-cached-lfs-checkout@bn-ci-main
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
@@ -228,7 +228,7 @@ jobs:
           - StandaloneOSX # Build a macOS standalone.
 
     steps:
-      - uses: Battle-Nations/actions-cached-lfs-checkout@bn-ci-main
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
