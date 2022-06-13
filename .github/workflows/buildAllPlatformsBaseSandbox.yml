@@ -141,8 +141,6 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - run: git submodule foreach git lfs pull
-
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
       - name: Copy workspace to C drive
@@ -158,11 +156,6 @@ jobs:
       #     restore-keys: |
       #       Library-${{ matrix.targetPlatform }}-
       #       Library-
-
-      - name: Show workspace
-        run: | 
-          Get-ChildItem -Path C:/build_workspace -Directory
-          pwd
       
       - run: get-PSDrive
 
@@ -235,8 +228,6 @@ jobs:
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
           submodules: 'recursive'
-
-      - run: git submodule foreach git lfs pull
 
       # - uses: actions/cache@v3
       #   with:
