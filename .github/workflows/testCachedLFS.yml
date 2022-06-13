@@ -1,0 +1,17 @@
+name: Test LFS Cache
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  pullLFS:
+    name: Pull LFS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: Battle-Nations/BattleNations-Base-Sandbox
+          fetch-depth: 0
+          submodules: 'recursive'
