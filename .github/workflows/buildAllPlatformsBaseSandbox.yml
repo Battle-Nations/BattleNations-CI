@@ -10,6 +10,9 @@ on:
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
+      pushToPatchkit:
+        description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
+        type: boolean
 
 jobs:
   envVarSetup:
@@ -72,6 +75,7 @@ jobs:
       - run: df -h
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
+        id: buildStep
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -81,20 +85,20 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
-      # Folder permissions don't allow us to write our zip so we need to chmod it. Using 777 for simplicity
-      - run: sudo chmod 777 build/${{ matrix.targetPlatform }}
+      # We need to chown the files in build for our zip action below
+      - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
 
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          filename: DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           directory: build/${{ matrix.targetPlatform }}
           path: ${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip 
 
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          filename: RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           directory: build/${{ matrix.targetPlatform }}
           path: ${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/
           
@@ -105,8 +109,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
+          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -116,9 +120,25 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
+          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
+
+      - name: Remove Debug Folders and Zips
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: |
+          rm -rf build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          rm build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          rm build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
 
       - run: df -h
 
@@ -162,6 +182,7 @@ jobs:
       # Although we moved our directory, we are using a custom version of unity-builder to handle the
       # path that isn't in the github workspace
       - uses: Battle-Nations/unity-builder@bn-ci-main
+        id: buildStep
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -175,14 +196,14 @@ jobs:
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'C:/build_workspace/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          filename: 'C:/build_workspace/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           directory: 'C:/build_workspace/build/${{ matrix.targetPlatform }}'
           path: '*.exe *.dll ${{ github.event.inputs.buildName }}_Data/'
 
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'C:/build_workspace/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          filename: 'C:/build_workspace/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           directory: 'C:/build_workspace/build/${{ matrix.targetPlatform }}'
           path: '${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip'
 
@@ -195,8 +216,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: ${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG
+          source: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: ${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -206,9 +227,23 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: ${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
+          source: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: ${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
           permission: private
+
+      - name: Remove Debug Folders
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: rm -rf C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+        shell: bash
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_WIN_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: C:/build_workspace/build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
 
   buildForMacOSBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Mac
@@ -229,6 +264,8 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - run: df -h
+
       # - uses: actions/cache@v3
       #   with:
       #     path: Library
@@ -239,6 +276,7 @@ jobs:
       #       Library-
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
+        id: buildStep
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -250,14 +288,14 @@ jobs:
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          filename: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           directory: 'build/${{ matrix.targetPlatform }}'
           path: '*.app'
 
       - uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          filename: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           directory: 'build/${{ matrix.targetPlatform }}'
           path: '${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip'
 
@@ -270,8 +308,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
+          source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -281,8 +319,24 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
+          source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
+
+      - name: Remove Debug Folders and Zips
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: |
+          rm -rf build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+          rm build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          rm build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_MAC_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
 
       - run: df -h
