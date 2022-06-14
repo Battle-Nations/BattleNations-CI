@@ -110,7 +110,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -121,7 +121,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
 
       - name: Remove Debug Folders and Zips
@@ -217,7 +217,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: ${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG
+          out_dir: ${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -228,7 +228,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: ${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
+          out_dir: ${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
           permission: private
 
       - name: Remove Debug Folders and Zips
@@ -312,7 +312,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG'
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -323,7 +323,7 @@ jobs:
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
-          out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
+          out_dir: '${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
 
       - name: Remove Debug Folders and Zips
