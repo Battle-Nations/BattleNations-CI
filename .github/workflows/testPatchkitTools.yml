@@ -14,3 +14,39 @@ jobs:
 
     steps:
       - uses: Battle-Nations/Patchkit-Actions@main
+
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: Battle-Nations/BattleNations-Base-Sandbox
+
+      - name: Setup Test
+        uses: knicknic/os-specific-run@v1
+        id: testPath
+        with:
+          macos: |
+            echo "::set-output name=FILE_PATH::build/StandaloneOSX"
+            mkdir -p build/StandaloneOSX
+            cd build/StandaloneOSX
+            touch testfile.txt
+          linux: |
+            echo "::set-output name=FILE_PATH::build/StandaloneLinux"
+            mkdir -p build/StandaloneLinux
+            cd build/StandaloneLinux
+            touch testfile.txt
+          windows: |
+            echo "::set-output name=FILE_PATH::C:/workspace/build/StandaloneWin"
+            mkdir -p C:/workspace/build/StandaloneWin
+            cd C:/workspace/build/StandaloneWin
+            touch testfile.txt
+          windowsShell: 'bash'
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_WIN_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: 'v0.10'
+          files: ${{ steps.testPath.outputs.FILE_PATH }}
+          overwrite-draft: true
