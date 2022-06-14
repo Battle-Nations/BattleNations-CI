@@ -231,12 +231,9 @@ jobs:
           out_dir: ${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
           permission: private
 
-      - name: Remove Debug Folders and Zips
+      - name: Remove Debug Folders
         if: github.event.inputs.pushToPatchkit == 'true'
-        run: |
-          rm -rf C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
-          rm C:/build_workspace/build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-          rm C:/build_workspace/build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+        run: rm -rf C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
         shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions@main
