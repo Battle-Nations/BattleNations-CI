@@ -10,6 +10,9 @@ on:
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
+      pushToPatchkit:
+        description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
+        type: boolean
 
 jobs:
   envVarSetup:
@@ -72,6 +75,7 @@ jobs:
       - run: df -h
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
+        id: buildStep
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -119,6 +123,19 @@ jobs:
           source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
+
+      - name: Remove Debug Folders
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: rm -rf build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
 
       - run: df -h
 
@@ -210,6 +227,20 @@ jobs:
           out_dir: ${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE
           permission: private
 
+      - name: Remove Debug Folders
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: rm -rf C:/build_workspace/build/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ C:/build_workspace/build/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+        shell: bash
+      
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_WIN_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: C:/build_workspace/build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
+
   buildForMacOSBasedPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on Mac
     runs-on: macos-latest
@@ -228,6 +259,8 @@ jobs:
           repository: Battle-Nations/BattleNations-Base-Sandbox
           fetch-depth: 0
           submodules: 'recursive'
+
+      - run: df -h
 
       # - uses: actions/cache@v3
       #   with:
@@ -284,5 +317,18 @@ jobs:
           source: 'build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip'
           out_dir: '${{ github.event.inputs.buildName }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE'
           permission: private
+
+      - name: Remove Debug Folders
+        if: github.event.inputs.pushToPatchkit == 'true'
+        run: rm -rf build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
+
+      - uses: Battle-Nations/Patchkit-Actions@main
+        if: github.event.inputs.pushToPatchkit == 'true'
+        with:
+          secret: ${{ secrets.PATCHKIT_MAC_SECRET }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
+          label: '${{ steps.buildStep.outputs.buildVersion }}'
+          files: build/${{ matrix.targetPlatform }}
+          overwrite-draft: true
 
       - run: df -h
