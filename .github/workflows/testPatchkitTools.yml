@@ -43,7 +43,6 @@ jobs:
           windowsShell: 'bash'
 
       - uses: Battle-Nations/Patchkit-Actions@main
-        if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_WIN_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
