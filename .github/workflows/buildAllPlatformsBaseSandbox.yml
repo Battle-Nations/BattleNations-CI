@@ -85,8 +85,8 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
-      # Folder permissions don't allow us to write our zip so we need to chmod it. Using 777 for simplicity
-      - run: sudo chmod 777 build/${{ matrix.targetPlatform }}
+      # We need to chown the files in build for our zip action below
+      - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
 
       - uses: thedoctor0/zip-release@main
         with:
