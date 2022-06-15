@@ -23,11 +23,15 @@ jobs:
       BUILD_TIME: ${{ steps.envVars.outputs.BUILD_TIME }}
 
     steps:
-      - uses: actions/checkout@v3
+      # Using cached checkout to ensure the lfs assets are cached for the main runners
+      # Otherwise we might pull 3 times and waste bandwidth
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: Battle-Nations/BattleNations-Base-Sandbox
+          fetch-depth: 0
+          submodules: 'recursive'
 
       - name: Set ENV Vars
         id: envVars
