@@ -118,17 +118,17 @@ jobs:
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/"
-            DO_DEBUG_SOURCE_PATH=$(BUILD_PATH)/$(DO_DEBUG_SOURCE_PATH)"
-            DO_RELEASE_SOURCE_PATH=$(BUILD_PATH)/$(DO_RELEASE_SOURCE_PATH)"
+            DO_DEBUG_SOURCE_PATH=$(BUILD_PATH)/$(DO_DEBUG_SOURCE_PATH)
+            DO_RELEASE_SOURCE_PATH=$(BUILD_PATH)/$(DO_RELEASE_SOURCE_PATH)
             elif [ "${{ matrix.os }}" == "windows-2019" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
-            BUILD_PATH=$(WINDOWS_WORKSPACE_PATH)/$(BUILD_PATH)"
+            BUILD_PATH=$(WINDOWS_WORKSPACE_PATH)/$(BUILD_PATH)
           elif [ "${{ matrix.os }}" == "macos-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.app"
-            DO_DEBUG_SOURCE_PATH=$(BUILD_PATH)/$(DO_DEBUG_SOURCE_PATH)"
-            DO_RELEASE_SOURCE_PATH=$(BUILD_PATH)/$(DO_RELEASE_SOURCE_PATH)"
+            DO_DEBUG_SOURCE_PATH=$(BUILD_PATH)/$(DO_DEBUG_SOURCE_PATH)
+            DO_RELEASE_SOURCE_PATH=$(BUILD_PATH)/$(DO_RELEASE_SOURCE_PATH)
           fi
 
           # Universal Outputs
