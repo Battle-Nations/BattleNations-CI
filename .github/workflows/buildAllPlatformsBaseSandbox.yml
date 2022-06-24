@@ -36,6 +36,8 @@ jobs:
       - name: Set ENV Vars
         id: envVars
         run: |
+          BUILD_PATH=/test/file
+          echo "::set-output name=BUILD_PATH::$(echo $BUILD_PATH)"
           if [ -z "${{ github.event.inputs.ref }}" ]
           then
             echo No ref specified
@@ -132,10 +134,10 @@ jobs:
           fi
 
           # Universal Outputs
-          echo "::set-output name=BUILD_PATH::$(BUILD_PATH)"
-          echo "::set-output name=RELEASE_ZIP_FILES::$(RELEASE_ZIP_FILES)"
-          echo "::set-output name=DO_DEBUG_SOURCE_PATH::$(DO_DEBUG_SOURCE_PATH)"
-          echo "::set-output name=DO_RELEASE_SOURCE_PATH::$(DO_RELEASE_SOURCE_PATH)"
+          echo "::set-output name=BUILD_PATH::$(echo $BUILD_PATH)"
+          echo "::set-output name=RELEASE_ZIP_FILES::$(echo $RELEASE_ZIP_FILES)"
+          echo "::set-output name=DO_DEBUG_SOURCE_PATH::$(echo $DO_DEBUG_SOURCE_PATH)"
+          echo "::set-output name=DO_RELEASE_SOURCE_PATH::$(echo $DO_RELEASE_SOURCE_PATH)"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip"
           echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
