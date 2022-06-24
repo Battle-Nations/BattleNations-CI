@@ -75,7 +75,7 @@ jobs:
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
       - name: Copy workspace to C drive
-        if: ${{ matrix.os }} == 'windows-2019'
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
