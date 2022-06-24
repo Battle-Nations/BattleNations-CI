@@ -75,7 +75,7 @@ jobs:
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
       - name: Copy workspace to C drive
-        if: '${{ matrix.os }}' == 'windows-2019'
+        if: ${{ matrix.os }} == 'windows-2019'
         run: |
           mkdir C:/build_workspace
           xcopy "." "C:\build_workspace\" /s /y /q /h
@@ -145,7 +145,7 @@ jobs:
 
       # We need to chown the files in build on linux for our zip action below
       - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
-        if: '${{ matrix.os }}' == 'ubuntu-latest'
+        if: ${{ matrix.os }} == 'ubuntu-latest'
 
       - uses: thedoctor0/zip-release@main
         with:
@@ -163,7 +163,7 @@ jobs:
 
       - name: Move Artifacts to Github Workspace
         run: copy C:/build_workspace/*.zip ${{ github.workspace }}
-        if: '${{ matrix.os }}' == 'windows-2019'
+        if: ${{ matrix.os }} == 'windows-2019'
           
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
