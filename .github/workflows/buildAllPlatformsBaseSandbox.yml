@@ -13,6 +13,8 @@ on:
       pushToPatchkit:
         description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
         type: boolean
+      publishPatchkit:
+        description: 'Publish desktop builds after all desktop platforms successfully build. This will release them to the public!'
 
 jobs:
   envVarSetup:
@@ -203,7 +205,7 @@ jobs:
           rm '${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}' || true
           rm '${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}' || true
 
-      - uses: Battle-Nations/Patchkit-Actions@main
+      - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
