@@ -125,6 +125,16 @@ jobs:
         run: df -h
         shell: bash
 
+      - name: Link C and D drive workspaces
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          dir
+          pwd
+          cd ${{ steps.buildPath.outputs.RAW_WINDOWS_WORKSPACE_PATH }}
+          dir
+          pwd
+        shell: cmd
+
       - uses: Battle-Nations/unity-builder@bn-ci-main
         id: buildStep
         env:
