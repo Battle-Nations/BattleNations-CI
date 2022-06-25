@@ -23,16 +23,6 @@ jobs:
       BUILD_TIME: ${{ steps.envVars.outputs.BUILD_TIME }}
 
     steps:
-      # Using cached checkout to ensure the lfs assets are cached for the main runners
-      # Otherwise we might pull 3 times and waste bandwidth
-      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
-        with:
-          ref: '${{ github.event.inputs.ref }}'
-          token: ${{ secrets.GH_PAT }}
-          repository: Battle-Nations/BattleNations-Base-Sandbox
-          fetch-depth: 0
-          submodules: 'recursive'
-
       # Setup Variable based on OS so we can share the same workflow for all three platforms
       - name: Setup Variables
         id: setupVariables
@@ -76,6 +66,16 @@ jobs:
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/RELEASE"
         shell: bash
+
+      # Using cached checkout to ensure the lfs assets are cached for the main runners
+      # Otherwise we might pull 3 times and waste bandwidth
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: Battle-Nations/BattleNations-Base-Sandbox
+          fetch-depth: 0
+          submodules: 'recursive'
 
       - name: Set ENV Vars
         id: envVars
