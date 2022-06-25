@@ -71,7 +71,7 @@ jobs:
       - name: Setup Build Path
         id: buildPath
         run: |
-          RAW_WINDOWS_WORKSPACE_PATH=C:\build_workspace
+          RAW_WINDOWS_WORKSPACE_PATH="C:\build_workspace"
           RAW_WORKSPACE_PATH="${{ github.workspace }}"
           WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
           WINDOWS_WORKSPACE_PATH=${RAW_WINDOWS_WORKSPACE_PATH//\\//}
