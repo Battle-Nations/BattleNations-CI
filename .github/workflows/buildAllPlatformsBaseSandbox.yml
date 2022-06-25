@@ -36,6 +36,7 @@ jobs:
       - name: Set ENV Vars
         id: envVars
         run: |
+          VARIABLE=TestVariable
           if [ -z "${{ github.event.inputs.ref }}" ]
           then
             echo No ref specified
@@ -47,6 +48,9 @@ jobs:
             echo $(git rev-parse --short ${{ github.event.inputs.ref }})
           fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
+          echo "::set-output name=TEST::$VARIABLE"
+
+      - run: echo ${{ steps.envVars.outputs.TEST }}
 
   buildForDesktopPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
@@ -110,8 +114,12 @@ jobs:
         run: |
           # Universal Variables
           BUILD_PATH=build/${{ matrix.targetPlatform }}
-          DO_DEBUG_SOURCE_PATH=DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-          DO_RELEASE_SOURCE_PATH=RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          BASE_NAME=${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_$SAFE_BUILD_VERSION_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME_NO_PLATFORM=${{ github.event.inputs.buildName }}_$SAFE_BUILD_VERSION_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          DO_DEBUG_SOURCE_PATH=DEBUG_$BASE_NAME.zip
+          DO_RELEASE_SOURCE_PATH=RELEASE_$BASE_NAME.zip
           WINDOWS_WORKSPACE_PATH=C:/build_workspace
 
           # OS Specific Modifications
@@ -130,17 +138,16 @@ jobs:
             DO_DEBUG_SOURCE_PATH=$BUILD_PATH/$DO_DEBUG_SOURCE_PATH
             DO_RELEASE_SOURCE_PATH=$BUILD_PATH/$DO_RELEASE_SOURCE_PATH
           fi
-
+          
           # Universal Outputs
           echo "::set-output name=BUILD_PATH::$(echo $BUILD_PATH)"
-          echo "::set-output name=RELEASE_ZIP_FILES::$(echo $RELEASE_ZIP_FILES)"
           echo "::set-output name=DO_DEBUG_SOURCE_PATH::$(echo $DO_DEBUG_SOURCE_PATH)"
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::$(echo $DO_RELEASE_SOURCE_PATH)"
-          echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip"
+          echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_$BASE_NAME.zip"
+          echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_$BASE_NAME.zip"
           echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
-          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/DEBUG"
-          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${{ github.event.inputs.buildName }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}/RELEASE"
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/RELEASE"
         shell: bash
 
       # We need to chown the files in build on linux for our zip action below
