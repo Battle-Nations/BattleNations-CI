@@ -89,6 +89,7 @@ jobs:
           echo "::set-output name=LIBRARY_PATH::$LIBRARY_PATH"
           echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
           echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
+          echo $LIBRARY_PATH
         shell: bash
       
       # There isn't enough space on the default D drive, so we are moving our working directory
