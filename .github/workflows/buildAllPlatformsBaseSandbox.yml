@@ -15,6 +15,7 @@ on:
         type: boolean
       publishPatchkit:
         description: 'Publish desktop builds after all desktop platforms successfully build. This will release them to the public!'
+        type: boolean
 
 jobs:
   envVarSetup:
