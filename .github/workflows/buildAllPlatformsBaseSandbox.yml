@@ -33,6 +33,50 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      # Setup Variable based on OS so we can share the same workflow for all three platforms
+      - name: Setup Variables
+        id: setupVariables
+        run: |
+          # Universal Variables
+          BUILD_PATH=build/${{ matrix.targetPlatform }}
+          BUILD_VERSION=v1.3.0
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          echo $SAFE_BUILD_VERSION
+          BASE_NAME=${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_$SAFE_BUILD_VERSION_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          echo $BASE_NAME
+          BASE_NAME_NO_PLATFORM=${{ github.event.inputs.buildName }}_$SAFE_BUILD_VERSION_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          DO_DEBUG_SOURCE_PATH=DEBUG_$BASE_NAME.zip
+          DO_RELEASE_SOURCE_PATH=RELEASE_$BASE_NAME.zip
+          WINDOWS_WORKSPACE_PATH=C:/build_workspace
+
+          # OS Specific Modifications
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]
+          then
+            echo "::set-output name=RELEASE_ZIP_FILES::${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/"
+            DO_DEBUG_SOURCE_PATH=$BUILD_PATH/$DO_DEBUG_SOURCE_PATH
+            DO_RELEASE_SOURCE_PATH=$BUILD_PATH/$DO_RELEASE_SOURCE_PATH
+            elif [ "${{ matrix.os }}" == "windows-2019" ]
+          then
+            echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
+            BUILD_PATH=$WINDOWS_WORKSPACE_PATH/$BUILD_PATH
+          elif [ "${{ matrix.os }}" == "macos-latest" ]
+          then
+            echo "::set-output name=RELEASE_ZIP_FILES::*.app"
+            DO_DEBUG_SOURCE_PATH=$BUILD_PATH/$DO_DEBUG_SOURCE_PATH
+            DO_RELEASE_SOURCE_PATH=$BUILD_PATH/$DO_RELEASE_SOURCE_PATH
+          fi
+          
+          # Universal Outputs
+          echo "::set-output name=BUILD_PATH::$BUILD_PATH"
+          echo "::set-output name=DO_DEBUG_SOURCE_PATH::$DO_DEBUG_SOURCE_PATH"
+          echo "::set-output name=DO_RELEASE_SOURCE_PATH::$DO_RELEASE_SOURCE_PATH"
+          echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_$BASE_NAME.zip"
+          echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_$BASE_NAME.zip"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::$BASE_NAME_NO_PLATFORM/RELEASE"
+        shell: bash
+
       - name: Set ENV Vars
         id: envVars
         run: |
