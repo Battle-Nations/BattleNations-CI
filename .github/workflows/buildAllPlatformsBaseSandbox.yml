@@ -50,6 +50,7 @@ jobs:
             echo $(git rev-parse --short ${{ github.event.inputs.ref }})
           fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
+          echo "::set-output name=FILE_HASH::${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}"
 
   buildForDesktopPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
@@ -67,6 +68,32 @@ jobs:
             os: macos-latest
 
     steps:
+      - name: Setup Build Path
+        id: buildPath
+        run: |
+          RAW_WINDOWS_WORKSPACE_PATH=C:\build_workspace
+          RAW_WORKSPACE_PATH="${{ github.workspace }}"
+          WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
+          WINDOWS_WORKSPACE_PATH=${RAW_WINDOWS_WORKSPACE_PATH//\\//}
+          echo "::set-output name=RAW_WINDOWS_WORKSPACE_PATH::$RAW_WINDOWS_WORKSPACE_PATH"
+          echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
+          echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
+        shell: bash
+
+      # There isn't enough space on the C-drive so we are making a workspace
+      # on the c-drive and linking it to the original location with a junction
+      - name: Create workspace on C
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: mkdir -p ${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}
+        shell: bash
+      
+      - name: Link C and D drive workspaces
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          rd ${{ github.workspace }}
+          mklink /J ${{ github.workspace }} ${{ steps.buildPath.outputs.RAW_WINDOWS_WORKSPACE_PATH }}
+        shell: cmd
+
       - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
         with:
           ref: '${{ github.event.inputs.ref }}'
@@ -75,39 +102,17 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - name: Setup Build Path
-        id: buildPath
-        run: |
-          WINDOWS_WORKSPACE_PATH=C:/build_workspace
-          RAW_WORKSPACE_PATH="${{ github.workspace }}"
-          WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
-          echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
-          echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
-        shell: bash
-      
-      # There isn't enough space on the default D drive, so we are moving our working directory
-      # to the c drive
-      - name: Copy workspace to C drive
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          mkdir -p ${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}
-          cp -r "." "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}"
+      - name: Show disk usage
+        run: df -h
         shell: bash
       
       - uses: actions/cache@v3
         with:
           path: Library
           key:
-            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+            Library-${{ matrix.targetPlatform }}-${{ needs.envVarSetup.outputs.FILE_HASH }}
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
-
-      # There isn't enough space on the default D drive, so we are moving our working directory
-      # to the c drive. We ignore errors as there may be cache misses.
-      - name: Move Library to C drive
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: mv "Library" "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/" || true
-        shell: bash
 
       - name: Show disk usage
         run: df -h
@@ -231,11 +236,6 @@ jobs:
           label: "${{ steps.buildStep.outputs.buildVersion }}"
           files: "${{ steps.buildPath.outpus.BUILD_PATH }}"
           overwrite-draft: true
-
-      - name: Move Library to Github Workspace
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: mv "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/Library" "./"
-        shell: bash
 
       - name: Show disk usage
         run: df -h
