@@ -51,6 +51,7 @@ jobs:
           fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
           echo "::set-output name=FILE_HASH::${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}"
+          echo "${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}"
 
   buildForDesktopPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
@@ -78,6 +79,7 @@ jobs:
           echo "::set-output name=RAW_WINDOWS_WORKSPACE_PATH::$RAW_WINDOWS_WORKSPACE_PATH"
           echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
           echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
+          echo ${{ needs.envVarSetup.outputs.FILE_HASH }}
         shell: bash
 
       # There isn't enough space on the C-drive so we are making a workspace
