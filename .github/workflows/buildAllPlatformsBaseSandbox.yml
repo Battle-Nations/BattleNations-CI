@@ -81,15 +81,8 @@ jobs:
           WINDOWS_WORKSPACE_PATH=C:/build_workspace
           RAW_WORKSPACE_PATH="${{ github.workspace }}"
           WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
-          LIBRARY_PATH="Library"
-          if [ "${{ matrix.os }}" == "windows-2019" ]
-          then
-            LIBRARY_PATH=${WINDOWS_WORKSPACE_PATH}/${LIBRARY_PATH}
-          fi
-          echo "::set-output name=LIBRARY_PATH::$LIBRARY_PATH"
           echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
           echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
-          echo $LIBRARY_PATH
         shell: bash
       
       # There isn't enough space on the default D drive, so we are moving our working directory
@@ -103,11 +96,18 @@ jobs:
       
       - uses: actions/cache@v3
         with:
-          path: ${{ steps.buildPath.outputs.LIBRARY_PATH }}
+          path: Library
           key:
             Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
+
+      # There isn't enough space on the default D drive, so we are moving our working directory
+      # to the c drive
+      - name: Move Library to C drive
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: mv "Library" "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/"
+        shell: bash
 
       - name: Show disk usage
         run: df -h
@@ -231,6 +231,11 @@ jobs:
           label: "${{ steps.buildStep.outputs.buildVersion }}"
           files: "${{ steps.buildPath.outpus.BUILD_PATH }}"
           overwrite-draft: true
+
+      - name: Move Library to Github Workspace
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: mv "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/Library" "./"
+        shell: bash
 
       - name: Show disk usage
         run: df -h
