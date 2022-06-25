@@ -119,6 +119,8 @@ jobs:
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
           DO_RELEASE_SOURCE_PATH=RELEASE_${BASE_NAME}.zip
           WINDOWS_WORKSPACE_PATH=C:/build_workspace
+          RAW_WORKSPACE_PATH="${{ github.workspace }}"
+          WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
 
           # OS Specific Modifications
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
@@ -138,6 +140,7 @@ jobs:
           fi
           
           # Universal Outputs
+          echo "::set-output name=WORKSPACE::${WORKSPACE_PATH}"
           echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
           echo "::set-output name=DO_DEBUG_SOURCE_PATH::${DO_DEBUG_SOURCE_PATH}"
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
@@ -167,12 +170,10 @@ jobs:
           path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
 
       - name: Move Artifacts to Github Workspace
-        run: copy C:/build_workspace/*.zip ${{ github.workspace }}
+        run: copy C:/build_workspace/*.zip ${{ steps.setupVariables.outputs.WORKSPACE }}
         if: ${{ matrix.os == 'windows-2019' }}
       
-      - run: |
-          DIR=${{ github.workspace }}
-          ls -lashi $(echo "${DIR//\\//}")
+      - run: ls -lashi ${{ steps.setupVariables.outputs.WORKSPACE }}
         shell: bash
 
       - name: Upload Debug To Digital Ocean
@@ -182,8 +183,8 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: '${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}'
-          out_dir: '${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}'
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -193,25 +194,25 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: '${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}'
-          out_dir: '${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}'
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
           permission: private
 
       # We don't care about missing files so we or it with true
       - name: Remove Debug Folders and Zips
         if: github.event.inputs.pushToPatchkit == 'true'
         run: |
-          rm -rf '${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}' || true
-          rm '${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}' || true
-          rm '${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}' || true
+          rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}" || true
+          rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
+          rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
 
       - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
-          label: '${{ steps.buildStep.outputs.buildVersion }}'
-          files: ${{ steps.setupVariables.outpus.BUILD_PATH }}
+          label: "${{ steps.buildStep.outputs.buildVersion }}"
+          files: "${{ steps.setupVariables.outpus.BUILD_PATH }}"
           overwrite-draft: true
 
       - name: Show disk usage
