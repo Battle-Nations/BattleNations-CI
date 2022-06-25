@@ -146,8 +146,6 @@ jobs:
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
             BUILD_PATH=${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/${BUILD_PATH}
-            DO_DEBUG_SOURCE_PATH=${{ steps.buildPath.outputs.WORKSPACE }}
-            DO_RELEASE_SOURCE_PATH=${{ steps.buildPath.outputs.WORKSPACE }}
           elif [ "${{ matrix.os }}" == "macos-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.app"
