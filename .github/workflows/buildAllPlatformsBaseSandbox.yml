@@ -75,22 +75,38 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Setup Build Path
+        id: buildPath
+        run: |
+          WINDOWS_WORKSPACE_PATH=C:/build_workspace
+          RAW_WORKSPACE_PATH="${{ github.workspace }}"
+          WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
+          LIBRARY_PATH="Library"
+          if [ "${{ matrix.os }}" == "windows-2019" ]
+          then
+            LIBRARY_PATH=${WINDOWS_WORKSPACE_PATH}/${LIBRARY_PATH}
+          fi
+          echo "::set-output name=LIBRARY_PATH::$LIBRARY_PATH"
+          echo "::set-output name=WINDOWS_WORKSPACE_PATH::$WINDOWS_WORKSPACE_PATH"
+          echo "::set-output name=WORKSPACE::$WORKSPACE_PATH"
+        shell: bash
+      
       # There isn't enough space on the default D drive, so we are moving our working directory
       # to the c drive
       - name: Copy workspace to C drive
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          mkdir C:/build_workspace
-          xcopy "." "C:\build_workspace\" /s /y /q /h
-
-      # - uses: actions/cache@v3
-      #   with:
-      #     path: Library
-      #     key:
-      #       Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-      #     restore-keys: |
-      #       Library-${{ matrix.targetPlatform }}-
-      #       Library-
+          mkdir -p ${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}
+          cp -r "." "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}"
+        shell: bash
+      
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.buildPath.outputs.LIBRARY_PATH }}
+          key:
+            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
 
       - name: Show disk usage
         run: df -h
@@ -119,9 +135,6 @@ jobs:
           BASE_NAME_NO_PLATFORM=${{ github.event.inputs.buildName }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
           DO_RELEASE_SOURCE_PATH=RELEASE_${BASE_NAME}.zip
-          WINDOWS_WORKSPACE_PATH=C:/build_workspace
-          RAW_WORKSPACE_PATH="${{ github.workspace }}"
-          WORKSPACE_PATH=${RAW_WORKSPACE_PATH//\\//}
 
           # OS Specific Modifications
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
@@ -132,7 +145,9 @@ jobs:
             elif [ "${{ matrix.os }}" == "windows-2019" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
-            BUILD_PATH=${WINDOWS_WORKSPACE_PATH}/${BUILD_PATH}
+            BUILD_PATH=${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/${BUILD_PATH}
+            DO_DEBUG_SOURCE_PATH=${{ steps.buildPath.outputs.WORKSPACE }}
+            DO_RELEASE_SOURCE_PATH=${{ steps.buildPath.outputs.WORKSPACE }}
           elif [ "${{ matrix.os }}" == "macos-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.app"
@@ -141,7 +156,6 @@ jobs:
           fi
           
           # Universal Outputs
-          echo "::set-output name=WORKSPACE::${WORKSPACE_PATH}"
           echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
           echo "::set-output name=DO_DEBUG_SOURCE_PATH::${DO_DEBUG_SOURCE_PATH}"
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
@@ -156,14 +170,16 @@ jobs:
       - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
-      - uses: thedoctor0/zip-release@main
+      - name: Zip Debug
+        uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
           directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
           path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
 
-      - uses: thedoctor0/zip-release@main
+      - name: Zip Release
+        uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}
@@ -171,10 +187,11 @@ jobs:
           path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
 
       - name: Move Artifacts to Github Workspace
-        run: copy C:/build_workspace/*.zip ${{ steps.setupVariables.outputs.WORKSPACE }}
+        run: cp ${{ steps.setupVariables.outputs.BUILD_PATH }}/*.zip ${{ steps.buildPath.outputs.WORKSPACE }}
         if: ${{ matrix.os == 'windows-2019' }}
-      
-      - run: ls -lashi ${{ steps.setupVariables.outputs.WORKSPACE }}
+        shell: bash
+
+      - run: ls -lashi ${{ steps.buildPath.outputs.WORKSPACE }}
         shell: bash
 
       - name: Upload Debug To Digital Ocean
@@ -213,7 +230,7 @@ jobs:
           secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
           label: "${{ steps.buildStep.outputs.buildVersion }}"
-          files: "${{ steps.setupVariables.outpus.BUILD_PATH }}"
+          files: "${{ steps.buildPath.outpus.BUILD_PATH }}"
           overwrite-draft: true
 
       - name: Show disk usage
