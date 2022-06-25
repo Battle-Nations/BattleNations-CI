@@ -135,7 +135,7 @@ jobs:
           rm build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           rm build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
-      - uses: Battle-Nations/Patchkit-Actions@main
+      - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
@@ -240,7 +240,7 @@ jobs:
         run: rm -rf C:/build_workspace/build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ build/${{ matrix.targetPlatform }}/${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip
         shell: bash
 
-      - uses: Battle-Nations/Patchkit-Actions@main
+      - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_WIN_SECRET }}
@@ -334,7 +334,7 @@ jobs:
           rm build/${{ matrix.targetPlatform }}/DEBUG_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           rm build/${{ matrix.targetPlatform }}/RELEASE_${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${{ steps.buildStep.outputs.buildVersion }}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
-      - uses: Battle-Nations/Patchkit-Actions@main
+      - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ secrets.PATCHKIT_MAC_SECRET }}
