@@ -36,7 +36,6 @@ jobs:
       - name: Set ENV Vars
         id: envVars
         run: |
-          VARIABLE=TestVariable
           if [ -z "${{ github.event.inputs.ref }}" ]
           then
             echo No ref specified
@@ -48,9 +47,6 @@ jobs:
             echo $(git rev-parse --short ${{ github.event.inputs.ref }})
           fi
           echo "::set-output name=BUILD_TIME::$(date "+%m-%d-%y_%H-%M-%S")"
-          echo "::set-output name=TEST::$VARIABLE"
-
-      - run: echo ${{ steps.envVars.outputs.TEST }}
 
   buildForDesktopPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
@@ -108,7 +104,7 @@ jobs:
           buildName: ${{ github.event.inputs.buildName }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
-      # Setup Variable based on OS
+      # Setup Variable based on OS so we can share the same workflow for all three platforms
       - name: Setup Variables
         id: setupVariables
         run: |
@@ -140,9 +136,9 @@ jobs:
           fi
           
           # Universal Outputs
-          echo "::set-output name=BUILD_PATH::$(echo $BUILD_PATH)"
-          echo "::set-output name=DO_DEBUG_SOURCE_PATH::$(echo $DO_DEBUG_SOURCE_PATH)"
-          echo "::set-output name=DO_RELEASE_SOURCE_PATH::$(echo $DO_RELEASE_SOURCE_PATH)"
+          echo "::set-output name=BUILD_PATH::$BUILD_PATH"
+          echo "::set-output name=DO_DEBUG_SOURCE_PATH::$DO_DEBUG_SOURCE_PATH"
+          echo "::set-output name=DO_RELEASE_SOURCE_PATH::$DO_RELEASE_SOURCE_PATH"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_$BASE_NAME.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_$BASE_NAME.zip"
           echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
