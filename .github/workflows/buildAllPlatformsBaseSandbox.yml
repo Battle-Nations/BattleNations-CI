@@ -90,8 +90,15 @@ jobs:
       - name: Link C and D drive workspaces
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
+          dir
+          pwd
+          cd ..
           rd ${{ github.workspace }}
           mklink /J ${{ github.workspace }} ${{ steps.buildPath.outputs.RAW_WINDOWS_WORKSPACE_PATH }}
+          dir
+          cd ${{ github.workspace }}
+          pwd
+          dir
         shell: cmd
 
       - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
