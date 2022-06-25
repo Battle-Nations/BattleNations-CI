@@ -167,7 +167,10 @@ jobs:
       - name: Move Artifacts to Github Workspace
         run: copy C:/build_workspace/*.zip ${{ github.workspace }}
         if: ${{ matrix.os == 'windows-2019' }}
-          
+      
+      - run: ls -lashi ${{ github.workspace }}
+        shell: bash
+
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
