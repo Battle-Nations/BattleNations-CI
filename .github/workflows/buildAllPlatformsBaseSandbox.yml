@@ -103,10 +103,10 @@ jobs:
             Library-${{ matrix.targetPlatform }}-
 
       # There isn't enough space on the default D drive, so we are moving our working directory
-      # to the c drive
+      # to the c drive. We ignore errors as there may be cache misses.
       - name: Move Library to C drive
         if: ${{ matrix.os == 'windows-2019' }}
-        run: mv "Library" "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/"
+        run: mv "Library" "${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/" || true
         shell: bash
 
       - name: Show disk usage
