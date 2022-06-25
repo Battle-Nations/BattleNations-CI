@@ -168,7 +168,9 @@ jobs:
         run: copy C:/build_workspace/*.zip ${{ github.workspace }}
         if: ${{ matrix.os == 'windows-2019' }}
       
-      - run: ls -lashi ${{ github.workspace }}
+      - run: |
+          DIR=${{ github.workspace }}
+          ls -lashi $(echo "${DIR//\\//}")
         shell: bash
 
       - name: Upload Debug To Digital Ocean
