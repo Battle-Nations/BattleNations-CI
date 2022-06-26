@@ -4,21 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        type: choice
-        description: Which environment to deploy to
-        options:
-          - Base-Sandbox-Development
-          - Base-Sandbox-Production
-      testEnv:
         type: environment
+        description: Which environment to deploy to
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
-      pushToPatchkit:
-        description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
+      publishPatchkitOnSuccess:
+        description: 'Automatically publish patchkit after all platforms are built and uploaded. This will release it to the public!'
         type: boolean
+        default: false
       useCache:
-        description: "Whether to use the cached library from previous builds. Uncheck if there are build issues that can't be explained"
+        description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
         type: boolean
         default: true
 
@@ -232,7 +228,6 @@ jobs:
 
       # We don't care about missing files so we or it with true
       - name: Remove Debug Folders and Zips
-        if: github.event.inputs.pushToPatchkit == 'true'
         run: |
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
           # Don't want to accidentally ship debug symbols so error if these don't get deleted properly
@@ -242,7 +237,6 @@ jobs:
         shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions/upload@refactor-composite-action
-        if: github.event.inputs.pushToPatchkit == 'true'
         with:
           secret: ${{ steps.setupVariables.outputs.PATCHKIT_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
