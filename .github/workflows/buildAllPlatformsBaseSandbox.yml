@@ -234,6 +234,7 @@ jobs:
       - name: Remove Debug Folders and Zips
         if: github.event.inputs.pushToPatchkit == 'true'
         run: |
+          cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
           rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}" || true
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
