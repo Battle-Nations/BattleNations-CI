@@ -3,24 +3,18 @@ name: Build Base Sandbox for All Release Platforms
 on: 
   workflow_dispatch:
     inputs:
-      buildName:
-        description: 'Name Of Executable. Should not contain spaces.'
-        required: true
-        default: 'BattleNationsBaseSandbox'
       environment:
-        type: choice
+        type: environment
         description: Which environment to deploy to
-        options:
-          - Base-Sandbox-Development
-          - Base-Sandbox-Production
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
-      pushToPatchkit:
-        description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
+      publishPatchkitOnSuccess:
+        description: 'Automatically publish patchkit after all platforms are built and uploaded. This will release it to the public!'
         type: boolean
+        default: false
       useCache:
-        description: "Whether to use the cached library from previous builds. Uncheck if there are build issues that can't be explained"
+        description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
         type: boolean
         default: true
 
@@ -138,7 +132,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: ${{ github.event.inputs.buildName }}
+          buildName: ${{ secrets.DESKTOP_BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
@@ -149,21 +143,21 @@ jobs:
           BUILD_PATH=build/${{ matrix.targetPlatform }}
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME=${{ github.event.inputs.buildName }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
-          BASE_NAME_NO_PLATFORM=${{ github.event.inputs.buildName }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME=${{ secrets.DESKTOP_BUILD_NAME }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
           DO_RELEASE_SOURCE_PATH=RELEASE_${BASE_NAME}.zip
 
           # OS Specific Modifications
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
           then
-            echo "::set-output name=RELEASE_ZIP_FILES::${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/"
+            echo "::set-output name=RELEASE_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }} *.so ${{ secrets.DESKTOP_BUILD_NAME }}_Data/"
             echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_LNX_SECRET }}"
             DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
             DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/${DO_RELEASE_SOURCE_PATH}
             elif [ "${{ matrix.os }}" == "windows-2019" ]
           then
-            echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
+            echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ secrets.DESKTOP_BUILD_NAME }}_Data/"
             BUILD_PATH=${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/${BUILD_PATH}
             echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_WIN_SECRET }}"
           elif [ "${{ matrix.os }}" == "macos-latest" ]
@@ -180,7 +174,7 @@ jobs:
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ secrets.DESKTOP_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
         shell: bash
@@ -234,7 +228,6 @@ jobs:
 
       # We don't care about missing files so we or it with true
       - name: Remove Debug Folders and Zips
-        if: github.event.inputs.pushToPatchkit == 'true'
         run: |
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
           # Don't want to accidentally ship debug symbols so error if these don't get deleted properly
@@ -243,13 +236,13 @@ jobs:
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
         shell: bash
 
-      - uses: Battle-Nations/Patchkit-Actions@v1
-        if: github.event.inputs.pushToPatchkit == 'true'
+      - uses: Battle-Nations/Patchkit-Actions/upload@v2-pre
         with:
           secret: ${{ steps.setupVariables.outputs.PATCHKIT_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
           label: "${{ steps.buildStep.outputs.buildVersion }}"
           files: "${{ steps.setupVariables.outputs.BUILD_PATH }}"
+          changelog-file: 'releasenotes.txt'
           overwrite-draft: true
 
       - name: Show disk usage
