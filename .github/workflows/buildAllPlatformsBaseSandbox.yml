@@ -236,7 +236,7 @@ jobs:
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
         shell: bash
 
-      - uses: Battle-Nations/Patchkit-Actions/upload@refactor-composite-action
+      - uses: Battle-Nations/Patchkit-Actions/upload@v2-pre
         with:
           secret: ${{ steps.setupVariables.outputs.PATCHKIT_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
