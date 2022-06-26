@@ -7,6 +7,12 @@ on:
         description: 'Name Of Executable. Should not contain spaces.'
         required: true
         default: 'BattleNationsBaseSandbox'
+      environment:
+        type: choice
+        description: Which environment to deploy to
+        options:
+          - Base-Sandbox-Development
+          - Base-Sandbox-Production
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
@@ -18,6 +24,7 @@ jobs:
   envVarSetup:
     name: Setup Environment Variables
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
     outputs:
       GITHUB_SHA_SHORT: ${{ steps.envVars.outputs.GITHUB_SHA_SHORT }}
       BUILD_TIME: ${{ steps.envVars.outputs.BUILD_TIME }}
@@ -53,6 +60,7 @@ jobs:
   buildForDesktopPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    environment: ${{ github.event.inputs.environment }}
     needs: envVarSetup
     strategy:
       fail-fast: false
