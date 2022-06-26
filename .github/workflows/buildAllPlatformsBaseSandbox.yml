@@ -238,7 +238,7 @@ jobs:
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
           ls -lashi
           echo ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
-          rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}"
+          rm -rf ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
           ls -lashi
