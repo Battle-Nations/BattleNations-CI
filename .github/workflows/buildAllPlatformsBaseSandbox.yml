@@ -19,6 +19,10 @@ on:
       pushToPatchkit:
         description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
         type: boolean
+      useCache:
+        description: "Whether to use the cached library from previous builds. Uncheck if there are build issues that can't be explained"
+        type: boolean
+        default: true
 
 jobs:
   envVarSetup:
@@ -114,6 +118,7 @@ jobs:
         shell: bash
       
       - uses: actions/cache@v3
+        if: github.event.inputs.useCache == 'true'
         with:
           path: Library
           key:
@@ -205,9 +210,6 @@ jobs:
         if: ${{ matrix.os == 'windows-2019' }}
         shell: bash
 
-      - run: ls -lashi ${{ steps.buildPath.outputs.WORKSPACE }}
-        shell: bash
-
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -234,14 +236,11 @@ jobs:
       - name: Remove Debug Folders and Zips
         if: github.event.inputs.pushToPatchkit == 'true'
         run: |
-          ls -lashi
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          ls -lashi
-          echo ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
+          # Don't want to accidentally ship debug symbols so error if these don't get deleted properly
           rm -rf ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
-          ls -lashi
         shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions@v1
