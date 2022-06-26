@@ -175,7 +175,7 @@ jobs:
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
         shell: bash
@@ -241,6 +241,7 @@ jobs:
           rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}" || true
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
+          ls -lashi
         shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions@v1
