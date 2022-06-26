@@ -234,10 +234,14 @@ jobs:
       - name: Remove Debug Folders and Zips
         if: github.event.inputs.pushToPatchkit == 'true'
         run: |
+          ls -lashi
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          ls -lashi
+          echo ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
           rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}" || true
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
+        shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
