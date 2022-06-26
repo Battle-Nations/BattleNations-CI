@@ -19,6 +19,10 @@ on:
       pushToPatchkit:
         description: 'Push output to Patchkit as draft release. This will overwrite any existing drafts!'
         type: boolean
+      useCache:
+        description: "Whether to use the cached library from previous builds. Uncheck if there are build issues that can't be explained"
+        type: boolean
+        default: true
 
 jobs:
   envVarSetup:
@@ -114,6 +118,7 @@ jobs:
         shell: bash
       
       - uses: actions/cache@v3
+        if: github.event.inputs.useCache == 'true'
         with:
           path: Library
           key:
@@ -175,7 +180,7 @@ jobs:
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ github.event.inputs.buildName }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ github.event.inputs.buildName }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
         shell: bash
@@ -205,9 +210,6 @@ jobs:
         if: ${{ matrix.os == 'windows-2019' }}
         shell: bash
 
-      - run: ls -lashi ${{ steps.buildPath.outputs.WORKSPACE }}
-        shell: bash
-
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -235,9 +237,11 @@ jobs:
         if: github.event.inputs.pushToPatchkit == 'true'
         run: |
           cd ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          rm -rf "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}" || true
+          # Don't want to accidentally ship debug symbols so error if these don't get deleted properly
+          rm -rf ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
           rm "${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}" || true
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
+        shell: bash
 
       - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
