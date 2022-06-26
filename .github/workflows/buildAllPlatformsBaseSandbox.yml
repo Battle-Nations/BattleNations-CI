@@ -153,17 +153,20 @@ jobs:
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::${{ github.event.inputs.buildName }} *.so ${{ github.event.inputs.buildName }}_Data/"
+            echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_LNX_SECRET }}"
             DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
             DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/${DO_RELEASE_SOURCE_PATH}
             elif [ "${{ matrix.os }}" == "windows-2019" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ github.event.inputs.buildName }}_Data/"
             BUILD_PATH=${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/${BUILD_PATH}
+            echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_WIN_SECRET }}"
           elif [ "${{ matrix.os }}" == "macos-latest" ]
           then
             echo "::set-output name=RELEASE_ZIP_FILES::*.app"
             DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
             DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/${DO_RELEASE_SOURCE_PATH}
+            echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_MAC_SECRET }}"
           fi
           
           # Universal Outputs
@@ -238,10 +241,10 @@ jobs:
       - uses: Battle-Nations/Patchkit-Actions@v1
         if: github.event.inputs.pushToPatchkit == 'true'
         with:
-          secret: ${{ secrets.PATCHKIT_LNX_SECRET }}
+          secret: ${{ steps.setupVariables.outputs.PATCHKIT_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
           label: "${{ steps.buildStep.outputs.buildVersion }}"
-          files: "${{ steps.buildPath.outpus.BUILD_PATH }}"
+          files: "${{ steps.setupVariables.outputs.BUILD_PATH }}"
           overwrite-draft: true
 
       - name: Show disk usage
