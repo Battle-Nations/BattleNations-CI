@@ -335,18 +335,13 @@ jobs:
     # needs: publishDesktopPlatforms
 
     steps:
-      - run: ls -lashi
-      - run: |
-          cd ..
-          ls -lashi
-
       - uses: actions/checkout@v3
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: ${{ secrets.REPO_NAME }}
 
-      - run: find /home/runner/work/_actions/Battle-Nations/BattleNations-CI -name format_release_notes.py
+      - run: find /home/runner/work/_actions -name format_release_notes.py
 
       - name: setup python
         uses: actions/setup-python@v4
