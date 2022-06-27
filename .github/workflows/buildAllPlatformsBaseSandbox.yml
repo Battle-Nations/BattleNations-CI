@@ -71,6 +71,9 @@ jobs:
           - targetPlatform: StandaloneOSX
             os: macos-latest
 
+    outputs:
+      buildVersion: ${{ steps.buildStep.outputs.buildVersion }}
+
     steps:
       - name: Setup Build Path
         id: buildPath
@@ -248,3 +251,41 @@ jobs:
       - name: Show disk usage
         run: df -h
         shell: bash
+
+  archiveSource:
+    if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
+    #needs: [envVarSetup, buildForDesktopPlatforms]
+    needs: envVarSetup
+    runs-on: ubuntu-latest
+
+    steps:
+      # Using cached checkout to ensure the lfs assets are cached for the main runners
+      # Otherwise we might pull 3 times and waste bandwidth
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: Battle-Nations/BattleNations-Base-Sandbox
+          fetch-depth: 0
+          submodules: 'recursive'
+      
+      - name: Zip Source
+        if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+
+      - name: Archive Source
+        if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v9999/SOURCE"
+          permission: private
+
+          # ${{ needs.buildForDesktopPlatforms.outputs.buildVersion }}
