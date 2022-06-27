@@ -332,7 +332,7 @@ jobs:
     name: Notify Discord of Version Release
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    # needs: publishDesktopPlatforms
+    needs: [publishDesktopPlatforms, buildForDesktopPlatforms]
 
     steps:
       - uses: actions/checkout@v3
@@ -345,7 +345,6 @@ jobs:
         with:
           repository: Battle-Nations/CI-Release-Notes
           path: release-notes-generator
-          ref: 'debug'
 
       - name: setup python
         uses: actions/setup-python@v4
@@ -355,7 +354,7 @@ jobs:
       - name: Format Release Notes
         id: formatReleaseNotes
         run: |
-          output=$(python release-notes-generator/format_release_notes.py release-notes-generator/releasenotes.txt 1.2.3)
+          output=$(python release-notes-generator/format_release_notes.py releasenotes.txt ${{ needs.buildForDesktopPlatforms.outputs.buildVersion }})
           output="${output//'%'/'%25'}"
           output="${output//$'\n'/'%0A'}"
           output="${output//$'\r'/'%0D'}" 
