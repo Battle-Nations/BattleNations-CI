@@ -1,0 +1,27 @@
+name: Publish all Patchkit Drafts
+
+on: 
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Which environment to deploy to
+        default: 'Base-Sandbox-Development'
+
+jobs:
+  publishDesktopPlatforms:
+    name: Publish Desktop Platform Builds
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    if: ${{ github.event.inputs.publishPatchkitOnSuccess == 'true' }}
+    needs: buildForDesktopPlatforms
+    strategy:
+      fail-fast: true
+      matrix:
+        patchkitSecret: [ PATCHKIT_LNX_SECRET, PATCHKIT_WIN_SECRET, PATCHKIT_MAC_SECRET ]
+
+    steps:
+      - uses: Battle-Nations/Patchkit-Actions/publish@v2-pre
+        with:
+          secret: ${{ secrets[matrix.patchkitSecret] }}
+          api-key: ${{ secrets.PATCHKIT_API_KEY }}
