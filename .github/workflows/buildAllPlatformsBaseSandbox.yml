@@ -270,14 +270,12 @@ jobs:
           submodules: 'recursive'
       
       - name: Zip Source
-        if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - name: Archive Source
-        if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
         uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY}}
