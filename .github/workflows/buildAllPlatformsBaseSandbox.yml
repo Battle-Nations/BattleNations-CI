@@ -327,3 +327,19 @@ jobs:
         with:
           secret: ${{ secrets[matrix.patchkitSecret] }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
+
+  notifyVersionRelease:
+    name: Notify Discord of Version Release
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    # needs: publishDesktopPlatforms
+
+    steps:
+      - name: Send Webhook
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.RELEASE_NOTES_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.RELEASE_NOTES_WEBHOOK_TOKEN }}
+          color: "#0a7317"
+          username: "Zoey"
+          message: "A new commit has been pushed with custom color."
