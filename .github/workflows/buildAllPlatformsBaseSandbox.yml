@@ -210,7 +210,7 @@ jobs:
       - name: Upload Debug To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
-          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
@@ -221,7 +221,7 @@ jobs:
       - name: Upload Release To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
-          access_key: ${{ secrets.DO_ACCESS_KEY}}
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
@@ -257,6 +257,7 @@ jobs:
     #needs: [envVarSetup, buildForDesktopPlatforms]
     needs: envVarSetup
     runs-on: windows-latest
+    environment: ${{ github.event.inputs.environment }}
 
     steps:
       # Using cached checkout to ensure the lfs assets are cached for the main runners
