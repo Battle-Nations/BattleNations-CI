@@ -340,8 +340,11 @@ jobs:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: ${{ secrets.REPO_NAME }}
-
-      - run: find / -name format_release_notes.py
+      
+      - uses: actions/checkout@v3
+        with:
+          repository: Battle-Nations/CI-Release-Notes
+          path: release-notes-generator
 
       - name: setup python
         uses: actions/setup-python@v4
@@ -351,7 +354,7 @@ jobs:
       - name: Format Release Notes
         id: formatReleaseNotes
         run: |
-          output=$(python format_release_notes.py v1.2.3)
+          output=$(python release-notes-generator/format_release_notes.py v1.2.3)
           output="${output//'%'/'%25'}"
           output="${output//$'\n'/'%0A'}"
           output="${output//$'\r'/'%0D'}" 
