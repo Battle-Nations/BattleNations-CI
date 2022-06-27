@@ -339,14 +339,14 @@ jobs:
       - run: |
           cd ..
           ls -lashi
-          
+
       - uses: actions/checkout@v3
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: ${{ secrets.REPO_NAME }}
 
-      - run: ls -lashi
+      - run: find /home/runner/work/_actions/Battle-Nations/BattleNations-CI -name format_release_notes.py
 
       - name: setup python
         uses: actions/setup-python@v4
