@@ -218,6 +218,18 @@ jobs:
           out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
           permission: private
 
+      - name: Archive Debug On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          permission: private
+
       - name: Upload Release To Digital Ocean
         uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -227,6 +239,18 @@ jobs:
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
           out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive Release On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
           permission: private
 
       # We don't care about missing files so we or it with true
@@ -254,8 +278,7 @@ jobs:
 
   archiveSource:
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
-    #needs: [envVarSetup, buildForDesktopPlatforms]
-    needs: envVarSetup
+    needs: [envVarSetup, buildForDesktopPlatforms]
     runs-on: windows-latest
     environment: ${{ github.event.inputs.environment }}
 
@@ -284,7 +307,5 @@ jobs:
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v9999/SOURCE"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/${{ needs.buildForDesktopPlatforms.outputs.buildVersion }}/SOURCE"
           permission: private
-
-          # ${{ needs.buildForDesktopPlatforms.outputs.buildVersion }}
