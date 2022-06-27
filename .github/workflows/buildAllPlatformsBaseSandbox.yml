@@ -256,7 +256,7 @@ jobs:
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
     #needs: [envVarSetup, buildForDesktopPlatforms]
     needs: envVarSetup
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       # Using cached checkout to ensure the lfs assets are cached for the main runners
