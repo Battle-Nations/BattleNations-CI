@@ -35,7 +35,7 @@ jobs:
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
-          repository: Battle-Nations/BattleNations-Base-Sandbox
+          repository: ${{ secrets.REPO_NAME }}
           fetch-depth: 0
           submodules: 'recursive'
 
@@ -106,7 +106,7 @@ jobs:
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
-          repository: Battle-Nations/BattleNations-Base-Sandbox
+          repository: ${{ secrets.REPO_NAME }}
           fetch-depth: 0
           submodules: 'recursive'
 
@@ -290,7 +290,7 @@ jobs:
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
-          repository: Battle-Nations/BattleNations-Base-Sandbox
+          repository: ${{ secrets.REPO_NAME }}
           fetch-depth: 0
           submodules: 'recursive'
       
@@ -335,17 +335,24 @@ jobs:
     # needs: publishDesktopPlatforms
 
     steps:
-      - name: Send Webhook
-        uses: appleboy/discord-action@master
+      - uses: actions/checkout@v3
         with:
-          webhook_id: ${{ secrets.RELEASE_NOTES_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.RELEASE_NOTES_WEBHOOK_TOKEN }}
-          color: "#0a7317"
-          message: "**A new commit has been pushed with custom color.** Unformatted text. \n Newline \n - Item 1 \n - Item 2 \n - Item 3"
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
 
-      - name: Discord notification
+      - name: Format Release Notes
+        id: formatReleaseNotes
+        run: |
+          output=$(python format_release_notes.py v1.2.3)
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
+          echo "::set-output name=CHANGELOG::$output"
+
+      - name: Send Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.RELEASE_NOTES_DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@0.3.2
         with:
-          args: "**A new commit has been pushed with custom color.** Unformatted text. \n Newline \n - Item 1 \n - Item 2 \n - Item 3"
+          args: ${{ steps.formatReleaseNotes.outputs.CHANGELOG }}
