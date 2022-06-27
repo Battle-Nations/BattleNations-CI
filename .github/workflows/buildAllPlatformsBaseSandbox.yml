@@ -227,7 +227,7 @@ jobs:
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
           permission: private
 
       - name: Upload Release To Digital Ocean
@@ -250,7 +250,7 @@ jobs:
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
           permission: private
 
       # We don't care about missing files so we or it with true
@@ -277,6 +277,7 @@ jobs:
         shell: bash
 
   archiveSource:
+    name: Archive Source
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
     needs: [envVarSetup, buildForDesktopPlatforms]
     runs-on: windows-latest
