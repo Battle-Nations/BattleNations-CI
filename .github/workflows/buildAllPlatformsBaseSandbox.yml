@@ -342,4 +342,4 @@ jobs:
           webhook_token: ${{ secrets.RELEASE_NOTES_WEBHOOK_TOKEN }}
           color: "#0a7317"
           username: "Zoey"
-          message: "A new commit has been pushed with custom color."
+          message: "**A new commit has been pushed with custom color.** Unformatted text. \n Newline \n - Item 1 \n - Item 2 \n - Item 3"
