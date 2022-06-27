@@ -335,11 +335,18 @@ jobs:
     # needs: publishDesktopPlatforms
 
     steps:
+      - run: ls -lashi
+      - run: |
+          cd ..
+          ls -lashi
+          
       - uses: actions/checkout@v3
         with:
           ref: '${{ github.event.inputs.ref }}'
           token: ${{ secrets.GH_PAT }}
           repository: ${{ secrets.REPO_NAME }}
+
+      - run: ls -lashi
 
       - name: setup python
         uses: actions/setup-python@v4
