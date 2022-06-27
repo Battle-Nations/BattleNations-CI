@@ -253,7 +253,7 @@ jobs:
         shell: bash
 
   archiveSource:
-    if: '${{ github.event.inputs.environment }}' == 'Base-Sandbox-Development'
+    if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
     #needs: [envVarSetup, buildForDesktopPlatforms]
     needs: envVarSetup
     runs-on: ubuntu-latest
