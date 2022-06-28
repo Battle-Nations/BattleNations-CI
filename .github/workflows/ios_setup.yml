@@ -1,12 +1,24 @@
 name: iOS One-Time Setup
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+        environment:
+          type: environment
+          description: Which environment to deploy to
+          default: 'Base-Sandbox-Development'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
@@ -22,5 +34,5 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
 
           GH_PAT: ${{ secrets.GH_PAT }}
-          GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+          GITHUB_REPOSITORY: ${{ secrets.REPO_NAME }}
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}

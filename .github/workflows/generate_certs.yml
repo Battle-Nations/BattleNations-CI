@@ -1,17 +1,23 @@
 name: Generate iOS Certs
 
-on:
-  workflow_run:
-    workflows: ['iOS One-Time Setup']
-    types:
-      - completed
+on: 
   workflow_dispatch:
+    inputs:
+        environment:
+          type: environment
+          description: Which environment to deploy to
+          default: 'Base-Sandbox-Development'
 
 jobs:
   generate_certs:
     runs-on: macos-latest
+    environment: ${{ github.event.inputs.environment }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
@@ -31,7 +37,7 @@ jobs:
           BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
           GH_PAT: ${{ secrets.GH_PAT }}
-          GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+          GITHUB_REPOSITORY: ${{ secrets.REPO_NAME }}
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
