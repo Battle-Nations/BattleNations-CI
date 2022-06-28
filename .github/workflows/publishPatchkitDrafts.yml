@@ -7,6 +7,12 @@ on:
         type: environment
         description: Which environment to deploy to
         default: 'Base-Sandbox-Development'
+      ref:
+        description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
+        required: false
+      version:
+        description: Version being deployed (Should be of format major.minor.patch. Do not include a leading 'v')
+        required: true
 
 jobs:
   publishDesktopPlatforms:
@@ -21,7 +27,46 @@ jobs:
         patchkitSecret: [ PATCHKIT_LNX_SECRET, PATCHKIT_WIN_SECRET, PATCHKIT_MAC_SECRET ]
 
     steps:
-      - uses: Battle-Nations/Patchkit-Actions/publish@v2-pre
+      - uses: Battle-Nations/Patchkit-Actions/publish@v2
         with:
           secret: ${{ secrets[matrix.patchkitSecret] }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
+
+  notifyVersionRelease:
+    name: Notify Discord of Version Release
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: publishDesktopPlatforms
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
+      
+      - uses: actions/checkout@v3
+        with:
+          repository: Battle-Nations/CI-Release-Notes
+          path: release-notes-generator
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Format Release Notes
+        id: formatReleaseNotes
+        run: |
+          output=$(python release-notes-generator/format_release_notes.py releasenotes.txt ${{ github.event.inputs.version }})
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
+          echo "::set-output name=CHANGELOG::$output"
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.RELEASE_NOTES_DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@0.3.2
+        with:
+          args: ${{ steps.formatReleaseNotes.outputs.CHANGELOG }}
