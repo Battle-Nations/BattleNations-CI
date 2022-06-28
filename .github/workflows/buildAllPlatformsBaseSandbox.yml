@@ -219,7 +219,7 @@ jobs:
           permission: private
 
       - name: Archive Debug On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
         uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY }}
@@ -242,7 +242,7 @@ jobs:
           permission: private
 
       - name: Archive Release On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
         uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY }}
@@ -263,7 +263,7 @@ jobs:
           rm "${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}" || true
         shell: bash
 
-      - uses: Battle-Nations/Patchkit-Actions/upload@v2-pre
+      - uses: Battle-Nations/Patchkit-Actions/upload@v2
         with:
           secret: ${{ steps.setupVariables.outputs.PATCHKIT_SECRET }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
@@ -278,7 +278,7 @@ jobs:
 
   archiveSource:
     name: Archive Source
-    if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+    if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
     needs: [envVarSetup, buildForDesktopPlatforms]
     runs-on: windows-latest
     environment: ${{ github.event.inputs.environment }}
@@ -323,7 +323,7 @@ jobs:
         patchkitSecret: [ PATCHKIT_LNX_SECRET, PATCHKIT_WIN_SECRET, PATCHKIT_MAC_SECRET ]
 
     steps:
-      - uses: Battle-Nations/Patchkit-Actions/publish@v2-pre
+      - uses: Battle-Nations/Patchkit-Actions/publish@v2
         with:
           secret: ${{ secrets[matrix.patchkitSecret] }}
           api-key: ${{ secrets.PATCHKIT_API_KEY }}
