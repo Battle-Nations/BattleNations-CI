@@ -19,7 +19,6 @@ jobs:
     name: Publish Desktop Platform Builds
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    if: ${{ github.event.inputs.publishPatchkitOnSuccess == 'true' }}
     strategy:
       fail-fast: true
       matrix:
