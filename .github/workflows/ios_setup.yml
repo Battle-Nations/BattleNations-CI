@@ -26,6 +26,7 @@ jobs:
       - name: Build iOS
         shell: bash
         run: |
+          bundle install
           bundle exec fastlane ios init_ci
         env:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
