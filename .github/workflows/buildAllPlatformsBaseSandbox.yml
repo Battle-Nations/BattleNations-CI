@@ -446,10 +446,7 @@ jobs:
           out_dir: "build/iOS"
 
       - name: Unzip iOS Artifact
-        run: |
-          echo ${{ needs.buildIOSProject.outputs.outputProjectZipName }}
-          ls -lashi build/iOS
-          unzip -o build/iOS/INTERMEDIATE_${{ secrets.DESKTOP_BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+        run: unzip -o build/iOS/INTERMEDIATE_${{ secrets.DESKTOP_BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
 
       - name: Fix File Permissions and Run fastlane
         env:
@@ -467,6 +464,9 @@ jobs:
           IOS_BUILD_PATH: ${{ format('{0}/build/iOS/{1}', github.workspace, secrets.DESKTOP_BUILD_NAME) }}
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }} # Change it to match your Unity bundle id
           PROJECT_NAME: ${{ secrets.DESKTOP_BUILD_NAME }} # Change it to match your project's name
+
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
         run: |
           find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
           bundle install
