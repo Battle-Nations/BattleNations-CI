@@ -335,11 +335,11 @@ jobs:
           BUILD_PATH=build/iOS
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME=${{ secrets.DESKTOP_BUILD_NAME }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME=${{ secrets.MOBILE_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
 
-          echo "::set-output name=INTERMEDIATE_ZIP_FILES::ios/"
+          echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ secrets.MOBILE_BUILD_NAME }}"
           DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
           DO_INTERMEDIATE_SOURCE_PATH=${BUILD_PATH}/INTERMEDIATE_${BASE_NAME}.zip
           echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
@@ -347,13 +347,17 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_SOURCE_PATH::${DO_INTERMEDIATE_SOURCE_PATH}"
           echo "::set-output name=INTERMEDIATE_ZIP_FILENAME::INTERMEDIATE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::ios_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.MOBILE_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
 
       # We need to chown the files in build on linux for our zip action below
       - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
+
+      - run: |
+          cd build/iOS
+          ls -lashi
 
       - name: Zip Debug
         uses: thedoctor0/zip-release@main
