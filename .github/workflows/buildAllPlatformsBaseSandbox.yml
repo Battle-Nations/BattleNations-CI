@@ -332,7 +332,7 @@ jobs:
       - name: Setup Variables
         id: setupVariables
         run: |
-          BUILD_PATH=build/ios
+          BUILD_PATH=build/iOS
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
           BASE_NAME=${{ secrets.DESKTOP_BUILD_NAME }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
@@ -352,74 +352,70 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
 
-      - run: |
-          cd build
-          ls -lashi
+      # We need to chown the files in build on linux for our zip action below
+      - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
 
-  #     # We need to chown the files in build on linux for our zip action below
-  #     - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
+      - name: Zip Debug
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
+          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
 
-  #     - name: Zip Debug
-  #       uses: thedoctor0/zip-release@main
-  #       with:
-  #         type: 'zip'
-  #         filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
-  #         directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-  #         path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
+      - name: Zip Intermediate
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
+          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          path: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILES }}
 
-  #     - name: Zip Intermediate
-  #       uses: thedoctor0/zip-release@main
-  #       with:
-  #         type: 'zip'
-  #         filename: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
-  #         directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-  #         path: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILES }}
+      - name: Upload Debug To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+          permission: private
 
-  #     - name: Upload Debug To Digital Ocean
-  #       uses: BetaHuhn/do-spaces-action@v2
-  #       with:
-  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
-  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
-  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-  #         space_region: ${{ secrets.DO_SPACE_REGION }}
-  #         source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-  #         out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
-  #         permission: private
+      - name: Archive Debug On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          permission: private
 
-  #     - name: Archive Debug On Digital Ocean
-  #       if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-  #       uses: BetaHuhn/do-spaces-action@v2
-  #       with:
-  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
-  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
-  #         space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-  #         space_region: ${{ secrets.DO_SPACE_REGION }}
-  #         source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-  #         out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
-  #         permission: private
+      - name: Upload Intermediate To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}"
+          permission: private
 
-  #     - name: Upload Intermediate To Digital Ocean
-  #       uses: BetaHuhn/do-spaces-action@v2
-  #       with:
-  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
-  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
-  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-  #         space_region: ${{ secrets.DO_SPACE_REGION }}
-  #         source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
-  #         out_dir: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}"
-  #         permission: private
-
-  #     - name: Archive Intermediate On Digital Ocean
-  #       if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-  #       uses: BetaHuhn/do-spaces-action@v2
-  #       with:
-  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
-  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
-  #         space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-  #         space_region: ${{ secrets.DO_SPACE_REGION }}
-  #         source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
-  #         out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
-  #         permission: private
+      - name: Archive Intermediate On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
+          permission: private
 
   # buildIOSIPA:
   #   name: Release to the App Store
