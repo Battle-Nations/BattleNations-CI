@@ -325,7 +325,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: iOS
-          buildName: ${{ secrets.MOBILE_BUILD_NAME }}
+          buildName: ${{ secrets.DESKTOP_BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
@@ -335,11 +335,11 @@ jobs:
           BUILD_PATH="build/iOS"
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME="${{ secrets.MOBILE_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
 
-          echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ secrets.MOBILE_BUILD_NAME }}"
+          echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}"
           DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
           DO_INTERMEDIATE_SOURCE_PATH=${BUILD_PATH}/INTERMEDIATE_${BASE_NAME}.zip
           echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
@@ -347,7 +347,7 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_SOURCE_PATH::${DO_INTERMEDIATE_SOURCE_PATH}"
           echo "::set-output name=INTERMEDIATE_ZIP_FILENAME::INTERMEDIATE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.MOBILE_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
