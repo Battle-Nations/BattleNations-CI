@@ -352,7 +352,9 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
 
-      - run: ls -lashi
+      - run: |
+          cd build
+          ls -lashi
 
   #     # We need to chown the files in build on linux for our zip action below
   #     - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
