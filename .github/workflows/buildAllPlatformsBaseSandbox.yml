@@ -426,7 +426,7 @@ jobs:
     name: Build IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: buildIOSProject
+    needs: [envVarSetup, buildIOSProject]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -444,7 +444,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ needs.buildIOSProject.outputs.outputProjectZipPath }}"
+          source: ${{ needs.buildIOSProject.outputs.outputProjectZipPath }}
           out_dir: "build/iOS"
 
       - name: Unzip iOS Artifact
