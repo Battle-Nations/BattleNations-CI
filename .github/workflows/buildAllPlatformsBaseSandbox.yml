@@ -289,7 +289,7 @@ jobs:
 
     outputs:
       buildVersion: ${{ steps.buildStep.outputs.buildVersion }}
-      outputProjectZipPath: ${{ steps.setupVariables.outputs.BASE_NAME_NO_PLATFORM }}/INTERMEDIATE
+      outputProjectZipPath: ${{ steps.setupVariables.outputs.BASE_NAME_NO_PLATFORM_NO_NAME }}/INTERMEDIATE
       outputProjectZipName: ${{ steps.setupVariables.outputs.BASE_NAME_NO_NAME }}.zip
 
     steps:
