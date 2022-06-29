@@ -472,6 +472,8 @@ jobs:
           bundle install
           bundle exec fastlane ios build
 
+          ls -lashi
+
   archiveSource:
     name: Archive Source
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
