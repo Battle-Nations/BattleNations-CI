@@ -289,8 +289,8 @@ jobs:
 
     outputs:
       buildVersion: ${{ steps.buildStep.outputs.buildVersion }}
-      outputProjectZipPath: ${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}/${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
-      outputProjectZipName: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
+      outputProjectZipPath: ${{ steps.setupVariables.outputs.BASE_NAME_NO_PLATFORM }}/INTERMEDIATE
+      outputProjectZipName: ${{ steps.setupVariables.outputs.BASE_NAME_NO_NAME }}.zip
 
     steps:
       - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
@@ -338,6 +338,8 @@ jobs:
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
           BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          echo "::set-output name=BASE_NAME_NO_PLATFORM_NO_NAME::_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          echo "::set-output name=BASE_NAME_NO_NAME::_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
 
           echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}"
@@ -355,10 +357,6 @@ jobs:
 
       # We need to chown the files in build on linux for our zip action below
       - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
-
-      - run: |
-          cd build/iOS
-          ls -lashi
 
       - name: Zip Debug
         uses: thedoctor0/zip-release@main
@@ -426,7 +424,7 @@ jobs:
     name: Build IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [envVarSetup, buildIOSProject]
+    needs: buildIOSProject
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -444,14 +442,14 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ needs.buildIOSProject.outputs.outputProjectZipPath }}
+          source: ${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSProject.outputs.outputProjectZipPath }}/${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSPdoject.outputs.outputProjectZipPath }}
           out_dir: "build/iOS"
 
       - name: Unzip iOS Artifact
         run: |
           echo ${{ needs.buildIOSProject.outputs.outputProjectZipName }}
           ls -lashi build/iOS
-          unzip -o build/iOS/${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+          unzip -o build/iOS/${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
 
       - name: Fix File Permissions and Run fastlane
         env:
