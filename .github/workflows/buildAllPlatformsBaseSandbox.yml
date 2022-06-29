@@ -438,7 +438,7 @@ jobs:
         run: mkdir -p build/iOS
 
       - name: Download iOS Artifact
-        uses: ./spacesActionsDownload
+        uses: Battle-Nations/DigitalOceanActions/spaces-download@main
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY }}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
@@ -449,7 +449,7 @@ jobs:
           permission: private
 
       - name: Unzip iOS Artifact
-        run: unzip -o build/iOS/{{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+        run: unzip -o build/iOS/${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
 
       - name: Fix File Permissions and Run fastlane
         env:
