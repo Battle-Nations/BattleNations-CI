@@ -289,7 +289,8 @@ jobs:
 
     outputs:
       buildVersion: ${{ steps.buildStep.outputs.buildVersion }}
-      outputProjectZipPath: ${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}/${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}
+      outputProjectZipPath: ${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}/${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
+      outputProjectZipName: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
 
     steps:
       - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
@@ -421,49 +422,55 @@ jobs:
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
           permission: private
 
-  # buildIOSIPA:
-  #   name: Release to the App Store
-  #   runs-on: macos-latest
-  #   environment: ${{ github.event.inputs.environment }}
-  #   needs: buildIOSProject
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v3
-  #       with:
-  #         token: ${{ secrets.GH_PAT }}
-  #         repository: ${{ secrets.REPO_NAME }}
+  buildIOSIPA:
+    name: Release to the App Store
+    runs-on: macos-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: buildIOSProject
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
 
-  #     - name: Download iOS Artifact
-  #       uses: ./spacesActionsDownload
-  #       with:
-  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
-  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
-  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-  #         space_region: ${{ secrets.DO_SPACE_REGION }}
-  #         source: "${{ needs.buildIOSProject.outputs.outputProjectZipPath }}"
-  #         out_dir: "${{ steps.setupVariables.outputs.BUILD_PATH }}"
-  #         permission: private
+      - name: Setup build directory
+        run: mkdir -p build/iOS
 
-  #     - name: Fix File Permissions and Run fastlane
-  #       env:
-  #         APPLE_CONNECT_EMAIL: ${{ secrets.APPLE_CONNECT_EMAIL }}
-  #         APPLE_DEVELOPER_EMAIL: ${{ secrets.APPLE_DEVELOPER_EMAIL }}
-  #         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Download iOS Artifact
+        uses: ./spacesActionsDownload
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ needs.buildIOSProject.outputs.outputProjectZipPath }}"
+          out_dir: "build/iOS"
+          permission: private
 
-  #         MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
-  #         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      - name: Unzip iOS Artifact
+        run: unzip -o build/iOS/{{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
 
-  #         APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
-  #         APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-  #         APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+      - name: Fix File Permissions and Run fastlane
+        env:
+          APPLE_CONNECT_EMAIL: ${{ secrets.APPLE_CONNECT_EMAIL }}
+          APPLE_DEVELOPER_EMAIL: ${{ secrets.APPLE_DEVELOPER_EMAIL }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-  #         IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
-  #         IOS_BUNDLE_ID: com.company.application # Change it to match your Unity bundle id
-  #         PROJECT_NAME: Your Project Name # Change it to match your project's name
-  #       run: |
-  #         find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
-  #         bundle install
-  #         bundle exec fastlane ios release
+          MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+
+          IOS_BUILD_PATH: ${{ format('{0}/build/iOS/{1}', github.workspace, secrets.DESKTOP_BUILD_NAME) }}
+          IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }} # Change it to match your Unity bundle id
+          PROJECT_NAME: ${{ secrets.DESKTOP_BUILD_NAME }} # Change it to match your project's name
+        run: |
+          find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
+          bundle install
+          bundle exec fastlane ios build
 
   archiveSource:
     name: Archive Source
