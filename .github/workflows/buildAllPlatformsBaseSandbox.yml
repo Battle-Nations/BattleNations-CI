@@ -442,7 +442,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSProject.outputs.outputProjectZipPath }}/${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSPdoject.outputs.outputProjectZipPath }}
+          source: ${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSProject.outputs.outputProjectZipPath }}/${{ secrets.DESKTOP_BUILD_NAME }}_${{ needs.buildIOSPdoject.outputs.outputProjectZipName }}
           out_dir: "build/iOS"
 
       - name: Unzip iOS Artifact
