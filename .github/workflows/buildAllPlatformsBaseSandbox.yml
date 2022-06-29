@@ -446,10 +446,12 @@ jobs:
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: "${{ needs.buildIOSProject.outputs.outputProjectZipPath }}"
           out_dir: "build/iOS"
-          permission: private
 
       - name: Unzip iOS Artifact
-        run: unzip -o build/iOS/${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+        run: |
+          echo ${{ needs.buildIOSProject.outputs.outputProjectZipName }}
+          ls -lashi build/iOS
+          unzip -o build/iOS/${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
 
       - name: Fix File Permissions and Run fastlane
         env:
