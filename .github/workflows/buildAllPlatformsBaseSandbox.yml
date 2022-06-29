@@ -308,9 +308,9 @@ jobs:
         with:
           path: Library
           key:
-            Library-${{ matrix.targetPlatform }}-${{ needs.envVarSetup.outputs.FILE_HASH }}
+            Library-iOS-${{ needs.envVarSetup.outputs.FILE_HASH }}
           restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
+            Library-iOS-
 
       - name: Show disk usage
         run: df -h
@@ -323,8 +323,8 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: ${{ secrets.DESKTOP_BUILD_NAME }}
+          targetPlatform: iOS
+          buildName: ${{ secrets.MOBILE_BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
