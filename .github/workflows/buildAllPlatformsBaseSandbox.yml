@@ -423,7 +423,7 @@ jobs:
           permission: private
 
   buildIOSIPA:
-    name: Release to the App Store
+    name: Build IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
     needs: buildIOSProject
