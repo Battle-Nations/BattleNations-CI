@@ -281,7 +281,7 @@ jobs:
         run: df -h
         shell: bash
 
-  buildIOS:
+  buildIOSProject:
     name: Generate ios project
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
@@ -289,6 +289,7 @@ jobs:
 
     outputs:
       buildVersion: ${{ steps.buildStep.outputs.buildVersion }}
+      outputProjectZipPath: ${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}/${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}
 
     steps:
       - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
@@ -351,70 +352,116 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
 
-      # We need to chown the files in build on linux for our zip action below
-      - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
+        - run: ls -lashi
 
-      - name: Zip Debug
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
-          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
+  #     # We need to chown the files in build on linux for our zip action below
+  #     - run: sudo chown -R $USER build/${{ matrix.targetPlatform }}
 
-      - name: Zip Intermediate
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
-          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          path: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILES }}
+  #     - name: Zip Debug
+  #       uses: thedoctor0/zip-release@main
+  #       with:
+  #         type: 'zip'
+  #         filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
+  #         directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+  #         path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
 
-      - name: Upload Debug To Digital Ocean
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
-          permission: private
+  #     - name: Zip Intermediate
+  #       uses: thedoctor0/zip-release@main
+  #       with:
+  #         type: 'zip'
+  #         filename: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILENAME }}
+  #         directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+  #         path: ${{ steps.setupVariables.outputs.INTERMEDIATE_ZIP_FILES }}
 
-      - name: Archive Debug On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
-          permission: private
+  #     - name: Upload Debug To Digital Ocean
+  #       uses: BetaHuhn/do-spaces-action@v2
+  #       with:
+  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
+  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
+  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+  #         space_region: ${{ secrets.DO_SPACE_REGION }}
+  #         source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+  #         out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+  #         permission: private
 
-      - name: Upload Intermediate To Digital Ocean
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
-          out_dir: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}"
-          permission: private
+  #     - name: Archive Debug On Digital Ocean
+  #       if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+  #       uses: BetaHuhn/do-spaces-action@v2
+  #       with:
+  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
+  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
+  #         space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+  #         space_region: ${{ secrets.DO_SPACE_REGION }}
+  #         source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+  #         out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+  #         permission: private
 
-      - name: Archive Intermediate On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
-          permission: private
+  #     - name: Upload Intermediate To Digital Ocean
+  #       uses: BetaHuhn/do-spaces-action@v2
+  #       with:
+  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
+  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
+  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+  #         space_region: ${{ secrets.DO_SPACE_REGION }}
+  #         source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
+  #         out_dir: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_OUTPUT_PATH }}"
+  #         permission: private
+
+  #     - name: Archive Intermediate On Digital Ocean
+  #       if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+  #       uses: BetaHuhn/do-spaces-action@v2
+  #       with:
+  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
+  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
+  #         space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+  #         space_region: ${{ secrets.DO_SPACE_REGION }}
+  #         source: "${{ steps.setupVariables.outputs.DO_INTERMEDIATE_SOURCE_PATH }}"
+  #         out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
+  #         permission: private
+
+  # buildIOSIPA:
+  #   name: Release to the App Store
+  #   runs-on: macos-latest
+  #   environment: ${{ github.event.inputs.environment }}
+  #   needs: buildIOSProject
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         token: ${{ secrets.GH_PAT }}
+  #         repository: ${{ secrets.REPO_NAME }}
+
+  #     - name: Download iOS Artifact
+  #       uses: ./spacesActionsDownload
+  #       with:
+  #         access_key: ${{ secrets.DO_ACCESS_KEY }}
+  #         secret_key: ${{ secrets.DO_SECRET_KEY }}
+  #         space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+  #         space_region: ${{ secrets.DO_SPACE_REGION }}
+  #         source: "${{ needs.buildIOSProject.outputs.outputProjectZipPath }}"
+  #         out_dir: "${{ steps.setupVariables.outputs.BUILD_PATH }}"
+  #         permission: private
+
+  #     - name: Fix File Permissions and Run fastlane
+  #       env:
+  #         APPLE_CONNECT_EMAIL: ${{ secrets.APPLE_CONNECT_EMAIL }}
+  #         APPLE_DEVELOPER_EMAIL: ${{ secrets.APPLE_DEVELOPER_EMAIL }}
+  #         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+  #         MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
+  #         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+  #         APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+  #         APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+  #         APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+
+  #         IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
+  #         IOS_BUNDLE_ID: com.company.application # Change it to match your Unity bundle id
+  #         PROJECT_NAME: Your Project Name # Change it to match your project's name
+  #       run: |
+  #         find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
+  #         bundle install
+  #         bundle exec fastlane ios release
 
   archiveSource:
     name: Archive Source
