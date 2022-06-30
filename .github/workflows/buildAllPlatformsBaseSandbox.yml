@@ -469,6 +469,7 @@ jobs:
           GH_USER: ${{ secrets.GH_USER }}
           CERTIFICATE_TYPE: "development"
           CODE_SIGN_IDENTITY: 'Apple Development'
+          EXPORT_METHOD: "development" # app-store, ad-hoc
         run: |
           find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
           bundle install
