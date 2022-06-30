@@ -468,6 +468,7 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USER: ${{ secrets.GH_USER }}
           CERTIFICATE_TYPE: "development"
+          CODE_SIGN_IDENTITY: 'Apple Development'
         run: |
           find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
           bundle install
