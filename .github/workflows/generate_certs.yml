@@ -22,16 +22,16 @@ jobs:
           ruby-version: 2.6
           bundler-cache: true
 
-      - name: Build iOS
+      - name: Generate Appstore Certs
         shell: bash
         run: |
           eval "$(ssh-agent -s)"
           ssh-add - <<< "${MATCH_DEPLOY_KEY}"
           bundle exec fastlane ios sync_certificates
         env:
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }} # Raw .p8 value
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
 
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
@@ -40,19 +40,18 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-
           CERT_TYPE: "appstore"
 
-      - name: Build iOS
+      - name: Generate Development Certs
         shell: bash
         run: |
           eval "$(ssh-agent -s)"
           ssh-add - <<< "${MATCH_DEPLOY_KEY}"
           bundle exec fastlane ios sync_certificates
         env:
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }} # Raw .p8 value
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
 
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
@@ -61,19 +60,18 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-
           CERT_TYPE: "development"
 
-      - name: Build iOS
+      - name: Generate Adhoc Certs
         shell: bash
         run: |
           eval "$(ssh-agent -s)"
           ssh-add - <<< "${MATCH_DEPLOY_KEY}"
           bundle exec fastlane ios sync_certificates
         env:
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }} # Raw .p8 value
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
 
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
@@ -82,6 +80,5 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-
           CERT_TYPE: "adhoc"
           
