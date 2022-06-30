@@ -41,7 +41,7 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CERT_TYPE: "appstore"
+          CERTIFICATE_TYPE: "appstore"
 
       - name: Generate Development Certs
         shell: bash
@@ -62,7 +62,7 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CERT_TYPE: "development"
+          CERTIFICATE_TYPE: "development"
 
       - name: Generate Adhoc Certs
         shell: bash
@@ -83,4 +83,4 @@ jobs:
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CERT_TYPE: "adhoc"
+          CERTIFICATE_TYPE: "adhoc"
