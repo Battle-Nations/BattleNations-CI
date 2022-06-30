@@ -424,7 +424,7 @@ jobs:
     name: Build IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: buildIOSProject
+    needs: [envVarSetup, buildIOSProject]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -476,7 +476,7 @@ jobs:
       - name: Setup Variables
         id: setupVariables
         run: |
-          BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
+          BUILD_VERSION=${{ needs.buildIOSProject.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
           BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
