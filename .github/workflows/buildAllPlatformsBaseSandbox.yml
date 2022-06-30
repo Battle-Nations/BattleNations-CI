@@ -523,7 +523,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip
+          source: "RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip"
           out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
           permission: private
 
@@ -535,7 +535,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip
+          source: "RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip"
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
           permission: private
 
