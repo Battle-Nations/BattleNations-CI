@@ -36,6 +36,7 @@ jobs:
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
           GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
           GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
@@ -56,6 +57,7 @@ jobs:
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
           GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
           GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
@@ -76,9 +78,9 @@ jobs:
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
 
           GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USER: ${{ secrets.GH_USER }}
           GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
           MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
           MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           CERT_TYPE: "adhoc"
-          
