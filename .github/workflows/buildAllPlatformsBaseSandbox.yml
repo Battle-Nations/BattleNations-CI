@@ -472,7 +472,72 @@ jobs:
           bundle install
           bundle exec fastlane ios build
 
-          ls -lashi
+      # Setup Variable based on OS so we can share the same workflow for all three platforms
+      - name: Setup Variables
+        id: setupVariables
+        run: |
+          BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
+        shell: bash
+
+      - name: Zip IPA
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip
+          path: "*.ipa"
+
+      - name: Upload Debug To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ secrets.DESKTOP_BUILD_NAME }}.app.dSYM.zip"
+          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive Debug On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ secrets.DESKTOP_BUILD_NAME }}.app.dSYM.zip"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          permission: private
+
+      - name: Upload Release To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip
+          out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive Release On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: RELEASE_${{ steps.setupVariables.outputs.BASE_NAME }}.zip
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
+          permission: private
+
 
   archiveSource:
     name: Archive Source
