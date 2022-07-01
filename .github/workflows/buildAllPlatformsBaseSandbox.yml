@@ -21,6 +21,8 @@ on:
         description: "Whether to skip building the desktop platforms"
         type: boolean
         default: true
+env:
+  BUILD_NAME: "BattleNationsBaseSandbox"
 
 jobs:
   envVarSetup:
@@ -140,7 +142,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: ${{ secrets.DESKTOP_BUILD_NAME }}
+          buildName: ${{ env.BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
@@ -151,21 +153,21 @@ jobs:
           BUILD_PATH=build/${{ matrix.targetPlatform }}
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME=${{ secrets.DESKTOP_BUILD_NAME }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
-          BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME=${{ env.BUILD_NAME }}_${{ matrix.targetPlatform }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
           DO_RELEASE_SOURCE_PATH=RELEASE_${BASE_NAME}.zip
 
           # OS Specific Modifications
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]
           then
-            echo "::set-output name=RELEASE_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }} *.so ${{ secrets.DESKTOP_BUILD_NAME }}_Data/"
+            echo "::set-output name=RELEASE_ZIP_FILES::${{ env.BUILD_NAME }} *.so ${{ env.BUILD_NAME }}_Data/"
             echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_LNX_SECRET }}"
             DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
             DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/${DO_RELEASE_SOURCE_PATH}
             elif [ "${{ matrix.os }}" == "windows-2019" ]
           then
-            echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ secrets.DESKTOP_BUILD_NAME }}_Data/"
+            echo "::set-output name=RELEASE_ZIP_FILES::*.exe *.dll ${{ env.BUILD_NAME }}_Data/"
             BUILD_PATH=${{ steps.buildPath.outputs.WINDOWS_WORKSPACE_PATH }}/${BUILD_PATH}
             echo "::set-output name=PATCHKIT_SECRET::${{ secrets.PATCHKIT_WIN_SECRET }}"
           elif [ "${{ matrix.os }}" == "macos-latest" ]
@@ -182,7 +184,7 @@ jobs:
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ secrets.DESKTOP_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
         shell: bash
@@ -326,7 +328,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: iOS
-          buildName: ${{ secrets.DESKTOP_BUILD_NAME }}
+          buildName: ${{ env.BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
@@ -336,13 +338,13 @@ jobs:
           BUILD_PATH="build/iOS"
           BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
           SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
-          BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          BASE_NAME="${{ env.BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           echo "::set-output name=BASE_NAME_NO_PLATFORM_NO_NAME::_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           echo "::set-output name=BASE_NAME_NO_NAME::_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
 
-          echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}"
+          echo "::set-output name=INTERMEDIATE_ZIP_FILES::${{ env.BUILD_NAME }}"
           DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
           DO_INTERMEDIATE_SOURCE_PATH=${BUILD_PATH}/INTERMEDIATE_${BASE_NAME}.zip
           echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
@@ -350,7 +352,7 @@ jobs:
           echo "::set-output name=DO_INTERMEDIATE_SOURCE_PATH::${DO_INTERMEDIATE_SOURCE_PATH}"
           echo "::set-output name=INTERMEDIATE_ZIP_FILENAME::INTERMEDIATE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ secrets.DESKTOP_BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_INTERMEDIATE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/INTERMEDIATE"
         shell: bash
@@ -442,11 +444,37 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ secrets.DESKTOP_BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipPath }}/INTERMEDIATE_${{ secrets.DESKTOP_BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }}
+          source: ${{ env.BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipPath }}/INTERMEDIATE_${{ env.BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }}
           out_dir: "build/iOS"
 
       - name: Unzip iOS Artifact
-        run: unzip -o build/iOS/INTERMEDIATE_${{ secrets.DESKTOP_BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+        run: unzip -o build/iOS/INTERMEDIATE_${{ env.BUILD_NAME }}${{ needs.buildIOSProject.outputs.outputProjectZipName }} -d build/iOS
+
+      - name: Setup Variables
+        id: setupVariables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "Base-Sandbox-Development" ]
+          then
+            echo "::set-output name=CERTIFICATE_TYPE::development" #appstore, development, adhoc
+            echo "::set-output name=CODE_SIGN_IDENTITY_TYPE::Apple Development" # Apple Development, Apple Distribution
+            echo "::set-output name=EXPORT_METHOD::development" # app-store, development, ad-hoc
+            echo "::set-output name=LANE::build" # build, beta, release
+            elif [ "${{ github.event.inputs.environment }}" == "Base-Sandbox-Production" ]
+          then
+            echo "::set-output name=CERTIFICATE_TYPE::appstore" #appstore, development, adhoc
+            echo "::set-output name=CODE_SIGN_IDENTITY_TYPE::Apple Distribution" # Apple Development, Apple Distribution
+            echo "::set-output name=EXPORT_METHOD::app-store" # app-store, development, ad-hoc
+            echo "::set-output name=LANE::beta" # build, beta, release
+          fi
+          BUILD_VERSION=${{ needs.buildIOSProject.outputs.buildVersion }}
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          BASE_NAME="${{ env.BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
+          echo "::set-output name=BASE_NAME::${BASE_NAME}"
+        shell: bash
 
       - name: Fix File Permissions and Run fastlane
         env:
@@ -461,32 +489,19 @@ jobs:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
 
-          IOS_BUILD_PATH: ${{ format('{0}/build/iOS/{1}', github.workspace, secrets.DESKTOP_BUILD_NAME) }}
+          IOS_BUILD_PATH: ${{ format('{0}/build/iOS/{1}', github.workspace, env.BUILD_NAME) }}
           IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }} # Change it to match your Unity bundle id
-          PROJECT_NAME: ${{ secrets.DESKTOP_BUILD_NAME }} # Change it to match your project's name
+          PROJECT_NAME: ${{ env.BUILD_NAME }} # Change it to match your project's name
 
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USER: ${{ secrets.GH_USER }}
-          CERTIFICATE_TYPE: "development"
-          CODE_SIGN_IDENTITY: 'Apple Development'
-          EXPORT_METHOD: "development" # app-store, ad-hoc
+          CERTIFICATE_TYPE: ${{ steps.setupVariables.outputs.CERTIFICATE_TYPE }}
+          CODE_SIGN_IDENTITY_TYPE: ${{ steps.setupVariables.outputs.CODE_SIGN_IDENTITY_TYPE }}
+          EXPORT_METHOD: ${{ steps.setupVariables.outputs.EXPORT_METHOD }}
         run: |
           find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
           bundle install
-          bundle exec fastlane ios build
-
-      # Setup Variable based on OS so we can share the same workflow for all three platforms
-      - name: Setup Variables
-        id: setupVariables
-        run: |
-          BUILD_VERSION=${{ needs.buildIOSProject.outputs.buildVersion }}
-          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
-          BASE_NAME="${{ secrets.DESKTOP_BUILD_NAME }}_iOS_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
-          BASE_NAME_NO_PLATFORM=${{ secrets.DESKTOP_BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
-
-          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
-          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
-        shell: bash
+          bundle exec fastlane ios ${{ steps.setupVariables.outputs.LANE }}
 
       - name: Zip IPA
         uses: thedoctor0/zip-release@main
@@ -502,7 +517,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_CI_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ secrets.DESKTOP_BUILD_NAME }}.app.dSYM.zip"
+          source: "${{ env.BUILD_NAME }}.app.dSYM.zip"
           out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
           permission: private
 
@@ -514,7 +529,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ secrets.DESKTOP_BUILD_NAME }}.app.dSYM.zip"
+          source: "${{ env.BUILD_NAME }}.app.dSYM.zip"
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
           permission: private
 
@@ -541,6 +556,17 @@ jobs:
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
           permission: private
 
+      - name: Upload build to App Center
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: Battle-Nations/MicrosoftAppCenterActions@main
+        with:
+          appName: "Battle Nations/BaseSandboxIOS"
+          token: ${{ secrets.APP_CENTER_API_KEY }}
+          group: "Internal"
+          file: "${{ env.BUILD_NAME }}.ipa"
+          gitReleaseNotes: true
+          notifyTesters: true
+          symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
 
   archiveSource:
     name: Archive Source
@@ -564,7 +590,7 @@ jobs:
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          filename: ${{ env.BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
 
       - name: Archive Source
         uses: BetaHuhn/do-spaces-action@v2
@@ -573,7 +599,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: ${{ secrets.DESKTOP_BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
+          source: ${{ env.BUILD_NAME }}_SOURCE_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}.zip
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ needs.buildForDesktopPlatforms.outputs.buildVersion }}/SOURCE"
           permission: private
 
