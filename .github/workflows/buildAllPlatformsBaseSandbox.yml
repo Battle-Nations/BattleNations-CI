@@ -560,7 +560,7 @@ jobs:
         if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
         uses: Battle-Nations/MicrosoftAppCenterActions/upload-build@main
         with:
-          appName: "Battle Nations/BaseSandboxIOS"
+          appName: "Battle-Nations/BaseSandboxIOS"
           token: ${{ secrets.APP_CENTER_API_KEY }}
           group: "Internal"
           file: "${{ env.BUILD_NAME }}.ipa"
