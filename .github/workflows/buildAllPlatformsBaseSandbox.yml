@@ -422,8 +422,8 @@ jobs:
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
           permission: private
 
-  buildIOSIPA:
-    name: Build IPA
+  publishIOSIPA:
+    name: Publish IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
     needs: [envVarSetup, buildIOSProject]
@@ -558,7 +558,7 @@ jobs:
 
       - name: Upload build to App Center
         if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
-        uses: Battle-Nations/MicrosoftAppCenterActions@main
+        uses: Battle-Nations/MicrosoftAppCenterActions/upload-build@main
         with:
           appName: "Battle Nations/BaseSandboxIOS"
           token: ${{ secrets.APP_CENTER_API_KEY }}
@@ -624,7 +624,7 @@ jobs:
     name: Notify Discord of Version Release
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [publishDesktopPlatforms, buildForDesktopPlatforms]
+    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, publishIOSIPA]
 
     steps:
       - uses: actions/checkout@v3
