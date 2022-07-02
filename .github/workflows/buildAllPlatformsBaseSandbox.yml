@@ -615,7 +615,7 @@ jobs:
     name: Notify Discord of Version Release
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [publishDesktopPlatforms, buildAndPublishIOSIPA]
+    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, buildAndPublishIOSIPA]
 
     steps:
       - uses: actions/checkout@v3
@@ -637,10 +637,10 @@ jobs:
       - name: Format Release Notes
         id: formatReleaseNotes
         run: |
-          output=$(python release-notes-generator/format_release_notes.py releasenotes.txt ${{ needs.buildForDesktopPlatforms.outputs.buildVersion }})
+          output=$(python release-notes-generator/format_release_notes.py releasenotes.txt ${{ needs.buildForDesktopPlatforms.outputs.buildVersion }} ${{ secrets.DISCORD_NOTIFY_ROLE_ID }})
           output="${output//'%'/'%25'}"
           output="${output//$'\n'/'%0A'}"
-          output="${output//$'\r'/'%0D'}" 
+          output="${output//$'\r'/'%0D'}"
           echo "::set-output name=CHANGELOG::$output"
 
       - name: Send Discord notification
