@@ -6,6 +6,7 @@ on:
       environment:
         type: environment
         description: Which environment to deploy to
+        default: 'Base-Sandbox-Development'
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
