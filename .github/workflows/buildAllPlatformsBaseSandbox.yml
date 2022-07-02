@@ -301,7 +301,6 @@ jobs:
         shell: bash
       
       - uses: actions/cache@v3
-        if: github.event.inputs.useCache == 'true'
         with:
           path: Library
           key:
