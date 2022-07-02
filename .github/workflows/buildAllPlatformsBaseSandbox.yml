@@ -9,10 +9,6 @@ on:
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
-      publishPatchkitOnSuccess:
-        description: 'Automatically publish patchkit after all platforms are built and uploaded. This will release it to the public!'
-        type: boolean
-        default: false
       # useCache:
       #   description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
       #   type: boolean
@@ -419,7 +415,7 @@ jobs:
           out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/INTERMEDIATE"
           permission: private
 
-  publishIOSIPA:
+  buildAndPublishIOSIPA:
     name: Publish IPA
     runs-on: macos-latest
     environment: ${{ github.event.inputs.environment }}
@@ -568,7 +564,7 @@ jobs:
   archiveSource:
     name: Archive Source
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-    needs: [envVarSetup, publishForDesktopPlatforms, publishIOSIPA]
+    needs: [envVarSetup, publishForDesktopPlatforms, buildAndPublishIOSIPA]
     runs-on: windows-latest
     environment: ${{ github.event.inputs.environment }}
 
@@ -604,7 +600,6 @@ jobs:
     name: Publish Desktop Platform Builds
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    if: ${{ github.event.inputs.publishPatchkitOnSuccess == 'true' }}
     needs: buildForDesktopPlatforms
     strategy:
       fail-fast: true
@@ -621,7 +616,7 @@ jobs:
     name: Notify Discord of Version Release
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, publishIOSIPA]
+    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, buildAndPublishIOSIPA]
 
     steps:
       - uses: actions/checkout@v3
