@@ -13,14 +13,11 @@ on:
         description: 'Automatically publish patchkit after all platforms are built and uploaded. This will release it to the public!'
         type: boolean
         default: false
-      useCache:
-        description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
-        type: boolean
-        default: true
-      skipDesktopBuilds:
-        description: "Whether to skip building the desktop platforms"
-        type: boolean
-        default: true
+      # useCache:
+      #   description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
+      #   type: boolean
+      #   default: true
+
 env:
   BUILD_NAME: "BattleNationsBaseSandbox"
 
@@ -65,7 +62,6 @@ jobs:
     name: Build for ${{ matrix.targetPlatform }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     environment: ${{ github.event.inputs.environment }}
-    if: ${{ !github.event.inputs.skipDesktopBuilds }}
     needs: envVarSetup
     strategy:
       fail-fast: false
@@ -121,14 +117,15 @@ jobs:
         run: df -h
         shell: bash
       
-      - uses: actions/cache@v3
-        if: github.event.inputs.useCache == 'true'
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.targetPlatform }}-${{ needs.envVarSetup.outputs.FILE_HASH }}
-          restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
+      # Not enough space on github cache for all our platforms
+      # - uses: actions/cache@v3
+      #   if: github.event.inputs.useCache == 'true'
+      #   with:
+      #     path: Library
+      #     key:
+      #       Library-${{ matrix.targetPlatform }}-${{ needs.envVarSetup.outputs.FILE_HASH }}
+      #     restore-keys: |
+      #       Library-${{ matrix.targetPlatform }}-
 
       - name: Show disk usage
         run: df -h
@@ -571,7 +568,7 @@ jobs:
   archiveSource:
     name: Archive Source
     if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-    needs: [envVarSetup, buildForDesktopPlatforms]
+    needs: [envVarSetup, publishForDesktopPlatforms, publishIOSIPA]
     runs-on: windows-latest
     environment: ${{ github.event.inputs.environment }}
 
