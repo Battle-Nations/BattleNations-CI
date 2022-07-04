@@ -616,9 +616,9 @@ jobs:
       - name: Cleanup Between Runs
         run: | 
           git restore .
-          rm user
-          rm -rf Assets/Editor/Editor/
-          rm  Assets/Editor/Editor.meta
+          sudo rm user
+          sudo rm -rf Assets/Editor/Editor/
+          sudo rm  Assets/Editor/Editor.meta
         shell: bash
 
       - uses: Battle-Nations/unity-builder@bn-ci-main-android-patch
