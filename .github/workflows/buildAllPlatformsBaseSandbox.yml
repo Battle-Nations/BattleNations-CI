@@ -561,6 +561,156 @@ jobs:
           notifyTesters: true
           symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
 
+  buildAndPublishAndroid:
+    name: Build and Publish Android
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: envVarSetup
+
+    steps:
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Show disk usage
+        run: df -h
+        shell: bash
+
+      - uses: Battle-Nations/unity-builder@bn-ci-main
+        id: buildStep
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: ${{ env.BUILD_NAME }}
+          gitPrivateToken: ${{ secrets.GH_PAT }}
+          androidAppBundle: false
+          androidKeystoreName: user # This file won't exist, but this property needs to exist.
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+
+      - uses: Battle-Nations/unity-builder@bn-ci-main
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: ${{ env.BUILD_NAME }}
+          gitPrivateToken: ${{ secrets.GH_PAT }}
+          androidAppBundle: true
+          androidKeystoreName: user # This file won't exist, but this property needs to exist.
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+
+      - run: ls -lashi build/Android/
+        shell: bash
+
+      # Setup Variable based on OS so we can share the same workflow for all three platforms
+      - name: Setup Variables
+        id: setupVariables
+        run: |
+          BUILD_PATH="build/Android"
+          BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          BASE_NAME="${{ env.BUILD_NAME }}_Android_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          echo "::set-output name=BASE_NAME_NO_PLATFORM_NO_NAME::_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          echo "::set-output name=BASE_NAME_NO_NAME::_Android_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
+
+          echo "::set-output name=RELEASE_ZIP_FILES::*.apk *.aab"
+          DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
+          DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/RELEASE_${BASE_NAME}.zip
+          echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
+          echo "::set-output name=DO_DEBUG_SOURCE_PATH::${DO_DEBUG_SOURCE_PATH}"
+          echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
+          echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
+          echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
+        shell: bash
+
+      # We need to chown the files in build on linux for our zip action below
+      - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
+
+      - name: Zip RELEASE
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}
+          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
+
+      - name: Upload Debug To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive Debug On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          permission: private
+
+      - name: Upload RELEASE To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive RELEASE On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
+          permission: private
+
+      # - name: Upload build to App Center
+      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+      #   uses: Battle-Nations/MicrosoftAppCenterActions/upload-build@main
+      #   with:
+      #     appName: "Battle-Nations/BaseSandboxAndroid"
+      #     token: ${{ secrets.APP_CENTER_API_KEY }}
+      #     group: "Internal"
+      #     file: "${{ env.BUILD_NAME }}.ipa"
+      #     gitReleaseNotes: true
+      #     notifyTesters: true
+      #     symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
+
   publishDesktopPlatforms:
     name: Publish Desktop Platform Builds
     runs-on: ubuntu-latest
