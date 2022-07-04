@@ -661,67 +661,78 @@ jobs:
           echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
           echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
           echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
-          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/"
           echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
           echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
         shell: bash
 
+      - run: df -h
+        shell: bash
+
       # We need to chown the files in build on linux for our zip action below
-      - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
+      # - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
 
-      - name: Zip RELEASE
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}
-          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
+      # - name: Zip Debug
+      #   uses: thedoctor0/zip-release@main
+      #   with:
+      #     type: 'zip'
+      #     filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
+      #     directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+      #     path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
 
-      - name: Upload Debug To Digital Ocean
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
-          permission: private
+      # - name: Zip RELEASE
+      #   uses: thedoctor0/zip-release@main
+      #   with:
+      #     type: 'zip'
+      #     filename: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}
+      #     directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+      #     path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
 
-      - name: Archive Debug On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
-          permission: private
+      # - name: Upload Debug To Digital Ocean
+      #   uses: BetaHuhn/do-spaces-action@v2
+      #   with:
+      #     access_key: ${{ secrets.DO_ACCESS_KEY }}
+      #     secret_key: ${{ secrets.DO_SECRET_KEY }}
+      #     space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+      #     space_region: ${{ secrets.DO_SPACE_REGION }}
+      #     source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+      #     out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+      #     permission: private
 
-      - name: Upload RELEASE To Digital Ocean
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
-          out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
-          permission: private
+      # - name: Archive Debug On Digital Ocean
+      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+      #   uses: BetaHuhn/do-spaces-action@v2
+      #   with:
+      #     access_key: ${{ secrets.DO_ACCESS_KEY }}
+      #     secret_key: ${{ secrets.DO_SECRET_KEY }}
+      #     space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+      #     space_region: ${{ secrets.DO_SPACE_REGION }}
+      #     source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+      #     out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+      #     permission: private
 
-      - name: Archive RELEASE On Digital Ocean
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
-        uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
-          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
-          permission: private
+      # - name: Upload RELEASE To Digital Ocean
+      #   uses: BetaHuhn/do-spaces-action@v2
+      #   with:
+      #     access_key: ${{ secrets.DO_ACCESS_KEY }}
+      #     secret_key: ${{ secrets.DO_SECRET_KEY }}
+      #     space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+      #     space_region: ${{ secrets.DO_SPACE_REGION }}
+      #     source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+      #     out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
+      #     permission: private
+
+      # - name: Archive RELEASE On Digital Ocean
+      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+      #   uses: BetaHuhn/do-spaces-action@v2
+      #   with:
+      #     access_key: ${{ secrets.DO_ACCESS_KEY }}
+      #     secret_key: ${{ secrets.DO_SECRET_KEY }}
+      #     space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+      #     space_region: ${{ secrets.DO_SPACE_REGION }}
+      #     source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+      #     out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
+      #     permission: private
 
       # - name: Upload build to App Center
       #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
