@@ -580,6 +580,14 @@ jobs:
         run: df -h
         shell: bash
 
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key:
+            Library-Android-${{ needs.envVarSetup.outputs.FILE_HASH }}
+          restore-keys: |
+            Library-Android-
+
       - uses: Battle-Nations/unity-builder@bn-ci-main
         id: buildStep
         env:
