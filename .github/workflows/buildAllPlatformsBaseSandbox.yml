@@ -613,6 +613,10 @@ jobs:
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
+      - name: Cleanup Between Runs
+        run: git restore .
+        shell: bash
+
       - uses: Battle-Nations/unity-builder@bn-ci-main-android-patch
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
