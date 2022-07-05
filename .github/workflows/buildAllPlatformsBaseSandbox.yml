@@ -618,6 +618,8 @@ jobs:
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
+
 
       - name: Cleanup Between Runs
         run: | 
@@ -643,6 +645,7 @@ jobs:
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
 
       - run: ls -lashi build/Android/
         shell: bash
