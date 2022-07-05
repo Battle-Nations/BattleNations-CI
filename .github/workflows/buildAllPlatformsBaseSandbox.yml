@@ -627,8 +627,6 @@ jobs:
         run: | 
           git restore .
           sudo rm user
-          sudo rm -rf Assets/Editor/Editor/
-          sudo rm  Assets/Editor/Editor.meta
           df -h
         shell: bash
 
