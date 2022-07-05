@@ -124,9 +124,9 @@ jobs:
       #     restore-keys: |
       #       Library-${{ matrix.targetPlatform }}-
 
-      - name: Show disk usage
-        run: df -h
-        shell: bash
+      # - name: Show disk usage
+      #   run: df -h
+      #   shell: bash
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
         id: buildStep
@@ -138,6 +138,7 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ env.BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
       - name: Setup Variables
