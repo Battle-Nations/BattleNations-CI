@@ -674,7 +674,7 @@ jobs:
           BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
           echo "::set-output name=BASE_NAME_NO_PLATFORM_NO_NAME::_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
           echo "::set-output name=BASE_NAME_NO_NAME::_Android_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
-          DO_DEBUG_SOURCE_PATH=DEBUG_${BASE_NAME}.zip
+          DO_DEBUG_SOURCE_PATH=$(find "$BUILD_PATH" -name "*.symbols.zip" -printf "%f\n")
 
           echo "::set-output name=RELEASE_ZIP_FILES::*.apk *.aab"
           DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/${DO_DEBUG_SOURCE_PATH}
@@ -694,14 +694,6 @@ jobs:
 
       # We need to chown the files in build on linux for our zip action below
       - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
-
-      - name: Zip Debug
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
-          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
-          path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
 
       - name: Zip RELEASE
         uses: thedoctor0/zip-release@main
@@ -764,10 +756,10 @@ jobs:
       #     appName: "Battle-Nations/BaseSandboxAndroid"
       #     token: ${{ secrets.APP_CENTER_API_KEY }}
       #     group: "Internal"
-      #     file: "${{ env.BUILD_NAME }}.ipa"
+      #     file: "${{ env.BUILD_NAME }}.aab"
       #     gitReleaseNotes: true
       #     notifyTesters: true
-      #     symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
+      #     symbolPath: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
 
   publishDesktopPlatforms:
     name: Publish Desktop Platform Builds
