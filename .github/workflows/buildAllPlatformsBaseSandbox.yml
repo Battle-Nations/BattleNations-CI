@@ -625,6 +625,7 @@ jobs:
           sudo rm user
           sudo rm -rf Assets/Editor/Editor/
           sudo rm  Assets/Editor/Editor.meta
+          df -h
         shell: bash
 
       - uses: Battle-Nations/unity-builder@bn-ci-main-android-patch
