@@ -568,6 +568,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
     needs: envVarSetup
+    env:
+      GOOGLE_PLAY_KEY_FILE: ${{ secrets.GOOGLE_PLAY_KEY_FILE }}
+      GOOGLE_PLAY_KEY_FILE_PATH: ${{ format('{0}/fastlane/google-fastlane.json', github.workspace) }}
+      ANDROID_BUILD_FILE_PATH: ${{ format('{0}/build/Android/${{ env.BUILD_NAME }}.aab', github.workspace) }}
+      ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
 
     steps:
       - name: Remove unneeded tools
@@ -767,6 +772,25 @@ jobs:
           gitReleaseNotes: true
           notifyTesters: true
           symbolPath: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+
+      - name: Add Authentication
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        run: echo "$GOOGLE_PLAY_KEY_FILE" > $GOOGLE_PLAY_KEY_FILE_PATH
+
+      - name: Set up Fastlane
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: true
+
+      - name: Upload to Google Play Internal
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: maierj/fastlane-action@v2.2.1
+        env:
+          ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+        with:
+          lane: 'android internal' # Change to upload to a different lane
 
   publishDesktopPlatforms:
     name: Publish Desktop Platform Builds
