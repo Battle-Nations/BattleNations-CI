@@ -578,7 +578,7 @@ jobs:
       - name: Remove unneeded tools
         run: |
           sudo rm -rf /opt/ghc
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          # sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf /usr/lib/jvm
           sudo rm -rf /usr/share/swift
