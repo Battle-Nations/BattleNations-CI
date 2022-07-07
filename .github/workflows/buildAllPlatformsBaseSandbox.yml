@@ -571,7 +571,6 @@ jobs:
     env:
       GOOGLE_PLAY_KEY_FILE: ${{ secrets.GOOGLE_PLAY_KEY_FILE }}
       GOOGLE_PLAY_KEY_FILE_PATH: ${{ format('{0}/fastlane/google-fastlane.json', github.workspace) }}
-      ANDROID_BUILD_FILE_PATH: ${{ format('{0}/build/Android/{1}.aab', github.workspace, env.BUILD_NAME) }}
       ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
 
     steps:
@@ -789,6 +788,7 @@ jobs:
         uses: maierj/fastlane-action@v2.2.1
         env:
           ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+          ANDROID_BUILD_FILE_PATH: ${{ format('{0}/build/Android/{1}.aab', github.workspace, env.BUILD_NAME) }}
         with:
           lane: 'android internal' # Change to upload to a different lane
 
