@@ -773,24 +773,24 @@ jobs:
           notifyTesters: true
           symbolPath: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
 
-      # - name: Add Authentication
-      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
-      #   run: echo "$GOOGLE_PLAY_KEY_FILE" > $GOOGLE_PLAY_KEY_FILE_PATH
+      - name: Add Authentication
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        run: echo "$GOOGLE_PLAY_KEY_FILE" > $GOOGLE_PLAY_KEY_FILE_PATH
 
-      # - name: Set up Fastlane
-      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
-      #   uses: ruby/setup-ruby@v1
-      #   with:
-      #     ruby-version: 2.7.2
-      #     bundler-cache: true
+      - name: Set up Fastlane
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: false
 
-      # - name: Upload to Google Play Internal
-      #   if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
-      #   uses: maierj/fastlane-action@v2.2.1
-      #   env:
-      #     ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
-      #   with:
-      #     lane: 'android internal' # Change to upload to a different lane
+      - name: Upload to Google Play Internal
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: maierj/fastlane-action@v2.2.1
+        env:
+          ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+        with:
+          lane: 'android internal' # Change to upload to a different lane
 
   publishDesktopPlatforms:
     name: Publish Desktop Platform Builds
