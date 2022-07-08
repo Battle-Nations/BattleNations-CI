@@ -10,10 +10,6 @@ on:
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
-      # useCache:
-      #   description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
-      #   type: boolean
-      #   default: true
 
 env:
   BUILD_NAME: "BattleNationsBaseSandbox"
@@ -775,18 +771,18 @@ jobs:
           symbolType: breakpad
 
       - name: Add Authentication
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
         run: echo "$GOOGLE_PLAY_KEY_FILE" > $GOOGLE_PLAY_KEY_FILE_PATH
 
       - name: Set up Fastlane
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7.2
           bundler-cache: false
 
       - name: Upload to Google Play Internal
-        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
         uses: maierj/fastlane-action@v2.2.1
         env:
           ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
