@@ -10,10 +10,6 @@ on:
       ref:
         description: 'What ref to checkout. Can be a branch name, tag, or SHA. Uses default branch if not specified'
         required: false
-      # useCache:
-      #   description: "Whether to use the cached library from previous builds. Leave this checked unless there are build issues that can't be explained"
-      #   type: boolean
-      #   default: true
 
 env:
   BUILD_NAME: "BattleNationsBaseSandbox"
@@ -124,9 +120,9 @@ jobs:
       #     restore-keys: |
       #       Library-${{ matrix.targetPlatform }}-
 
-      - name: Show disk usage
-        run: df -h
-        shell: bash
+      # - name: Show disk usage
+      #   run: df -h
+      #   shell: bash
 
       - uses: Battle-Nations/unity-builder@bn-ci-main
         id: buildStep
@@ -138,6 +134,7 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: ${{ env.BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
       - name: Setup Variables
@@ -301,13 +298,13 @@ jobs:
         run: df -h
         shell: bash
       
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-iOS-${{ needs.envVarSetup.outputs.FILE_HASH }}
-          restore-keys: |
-            Library-iOS-
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: Library
+      #     key:
+      #       Library-iOS-${{ needs.envVarSetup.outputs.FILE_HASH }}
+      #     restore-keys: |
+      #       Library-iOS-
 
       - name: Show disk usage
         run: df -h
@@ -323,6 +320,7 @@ jobs:
           targetPlatform: iOS
           buildName: ${{ env.BUILD_NAME }}
           gitPrivateToken: ${{ secrets.GH_PAT }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
 
       # Setup Variable based on OS so we can share the same workflow for all three platforms
       - name: Setup Variables
@@ -560,6 +558,237 @@ jobs:
           gitReleaseNotes: true
           notifyTesters: true
           symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
+          symbolType: symbol
+
+  buildAndPublishAndroid:
+    name: Build and Publish Android
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: envVarSetup
+    env:
+      GOOGLE_PLAY_KEY_FILE: ${{ secrets.GOOGLE_PLAY_KEY_FILE }}
+      GOOGLE_PLAY_KEY_FILE_PATH: ${{ format('{0}/fastlane/google-fastlane.json', github.workspace) }}
+      ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+
+    steps:
+      - name: Remove unneeded tools
+        run: |
+          sudo rm -rf /opt/ghc
+          # sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/graalvm
+          sudo rm -rf /home/linuxbrew
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /home/runneradmin/.rustup
+          sudo rm -rf /home/runner/.rustup
+          sudo rm -rf /etc/skel/.rustup
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/miniconda
+          sudo docker rmi node:12 node:14 node:16 node:12-alpine node:14-alpine node:16-alpine moby/buildkit:latest debian:9 debian:10 debian:11 ubuntu:16.04 buildpack-deps:stretch buildpack-deps:buster buildpack-deps:bullseye
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v6
+        with:
+          overprovision-lvm: 'true'
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - uses: Battle-Nations/action-cached-lfs-checkout@bn-ci-main
+        with:
+          ref: '${{ github.event.inputs.ref }}'
+          token: ${{ secrets.GH_PAT }}
+          repository: ${{ secrets.REPO_NAME }}
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Show disk usage
+        run: df -h
+        shell: bash
+
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key:
+            Library-Android-${{ needs.envVarSetup.outputs.FILE_HASH }}
+          restore-keys: |
+            Library-Android-
+
+      - uses: Battle-Nations/unity-builder@bn-ci-main-android-patch
+        id: buildStep
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: ${{ env.BUILD_NAME }}
+          gitPrivateToken: ${{ secrets.GH_PAT }}
+          androidAppBundle: false
+          androidKeystoreName: user # This file won't exist, but this property needs to exist.
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
+
+
+      - name: Cleanup Between Runs
+        run: | 
+          git restore .
+          sudo rm user
+          df -h
+        shell: bash
+
+      - uses: Battle-Nations/unity-builder@bn-ci-main-android-patch
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: ${{ env.BUILD_NAME }}
+          gitPrivateToken: ${{ secrets.GH_PAT }}
+          androidAppBundle: true
+          androidKeystoreName: user # This file won't exist, but this property needs to exist.
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          buildMethod: UnityBuilderAction.Builder.BuildProject
+
+      - run: ls -lashi build/Android/
+        shell: bash
+
+      # Setup Variable based on OS so we can share the same workflow for all three platforms
+      - name: Setup Variables
+        id: setupVariables
+        run: |
+          BUILD_PATH="build/Android"
+          BUILD_VERSION=${{ steps.buildStep.outputs.buildVersion }}
+          SAFE_BUILD_VERSION=$(echo "${BUILD_VERSION//./_}")
+          BASE_NAME="${{ env.BUILD_NAME }}_Android_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          BASE_NAME_NO_PLATFORM=${{ env.BUILD_NAME }}_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}
+          echo "::set-output name=BASE_NAME_NO_PLATFORM_NO_NAME::_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          echo "::set-output name=BASE_NAME_NO_NAME::_Android_${SAFE_BUILD_VERSION}_${{ needs.envVarSetup.outputs.BUILD_TIME }}_${{ needs.envVarSetup.outputs.GITHUB_SHA_SHORT }}"
+          SYMBOL_FILENAME=$(find "$BUILD_PATH" -name "*.symbols.zip" -printf "%f\n")
+
+          echo "::set-output name=RELEASE_ZIP_FILES::*.apk *.aab"
+          DO_DEBUG_SOURCE_PATH=${BUILD_PATH}/DEBUG_${BASE_NAME}.zip
+          DO_RELEASE_SOURCE_PATH=${BUILD_PATH}/RELEASE_${BASE_NAME}.zip
+          echo "::set-output name=SYMBOL_PATH::${BUILD_PATH}/${SYMBOL_FILENAME}"
+          echo "::set-output name=BUILD_PATH::${BUILD_PATH}"
+          echo "::set-output name=DO_DEBUG_SOURCE_PATH::${DO_DEBUG_SOURCE_PATH}"
+          echo "::set-output name=DO_RELEASE_SOURCE_PATH::${DO_RELEASE_SOURCE_PATH}"
+          echo "::set-output name=RELEASE_ZIP_FILENAME::RELEASE_${BASE_NAME}.zip"
+          echo "::set-output name=DEBUG_ZIP_FILENAME::DEBUG_${BASE_NAME}.zip"
+          echo "::set-output name=DEBUG_ZIP_FILES::${{ env.BUILD_NAME }}_BackUpThisFolder_ButDontShipItWithYourGame/ ${{ env.BUILD_NAME }}_BurstDebugInformation_DoNotShip/ ${SYMBOL_FILENAME}"
+          echo "::set-output name=DO_DEBUG_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/DEBUG"
+          echo "::set-output name=DO_RELEASE_OUTPUT_PATH::${BASE_NAME_NO_PLATFORM}/RELEASE"
+        shell: bash
+
+      - run: df -h
+        shell: bash
+
+      # We need to chown the files in build on linux for our zip action below
+      - run: sudo chown -R $USER ${{ steps.setupVariables.outputs.BUILD_PATH }}
+
+      - name: Zip Debug
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILENAME }}
+          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          path: ${{ steps.setupVariables.outputs.DEBUG_ZIP_FILES }}
+
+      - name: Zip RELEASE
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILENAME }}
+          directory: ${{ steps.setupVariables.outputs.BUILD_PATH }}
+          path: ${{ steps.setupVariables.outputs.RELEASE_ZIP_FILES }}
+
+      - name: Upload Debug To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_DEBUG_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive Debug On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_DEBUG_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/DEBUG"
+          permission: private
+
+      - name: Upload RELEASE To Digital Ocean
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_CI_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ steps.setupVariables.outputs.DO_RELEASE_OUTPUT_PATH }}"
+          permission: private
+
+      - name: Archive RELEASE On Digital Ocean
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_ARCHIVE_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: "${{ steps.setupVariables.outputs.DO_RELEASE_SOURCE_PATH }}"
+          out_dir: "${{ secrets.DO_ARCHIVE_BASE_PATH }}/v${{ steps.buildStep.outputs.buildVersion }}/RELEASE"
+          permission: private
+
+      - name: Upload build to App Center
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
+        uses: Battle-Nations/MicrosoftAppCenterActions/upload-build@main
+        with:
+          appName: "Battle-Nations/BaseSandboxAndroid"
+          token: ${{ secrets.APP_CENTER_API_KEY }}
+          group: "Internal"
+          file: "${{steps.setupVariables.outputs.BUILD_PATH}}/${{ env.BUILD_NAME }}.aab"
+          gitReleaseNotes: true
+          notifyTesters: true
+          symbolPath: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+          symbolType: breakpad
+
+      - name: Add Authentication
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        run: echo "$GOOGLE_PLAY_KEY_FILE" > $GOOGLE_PLAY_KEY_FILE_PATH
+
+      - name: Set up Fastlane
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: false
+
+      - name: Upload to Google Play Internal
+        if: ${{ github.event.inputs.environment == 'Base-Sandbox-Production' }}
+        uses: maierj/fastlane-action@v2.2.1
+        env:
+          ANDROID_SYMBOLS_PATH: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+          ANDROID_BUILD_FILE_PATH: ${{ format('{0}/build/Android/{1}.aab', github.workspace, env.BUILD_NAME) }}
+        with:
+          lane: 'android internal' # Change to upload to a different lane
 
   publishDesktopPlatforms:
     name: Publish Desktop Platform Builds
@@ -616,7 +845,7 @@ jobs:
     name: Notify Discord of Version Release
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, buildAndPublishIOSIPA]
+    needs: [publishDesktopPlatforms, buildForDesktopPlatforms, buildAndPublishIOSIPA, buildAndPublishAndroid]
 
     steps:
       - uses: actions/checkout@v3
