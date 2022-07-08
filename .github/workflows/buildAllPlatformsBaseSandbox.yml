@@ -562,6 +562,7 @@ jobs:
           gitReleaseNotes: true
           notifyTesters: true
           symbolPath: "${{ env.BUILD_NAME }}.app.dSYM.zip"
+          symbolType: symbol
 
   buildAndPublishAndroid:
     name: Build and Publish Android
@@ -771,6 +772,7 @@ jobs:
           gitReleaseNotes: true
           notifyTesters: true
           symbolPath: "${{ steps.setupVariables.outputs.SYMBOL_PATH }}"
+          symbolType: breakpad
 
       - name: Add Authentication
         if: ${{ github.event.inputs.environment == 'Base-Sandbox-Development' }}
